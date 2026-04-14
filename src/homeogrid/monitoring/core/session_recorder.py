@@ -42,10 +42,10 @@ class SessionRecorder:
 
     def close(self) -> None:
         self._stop.set()
-        self._worker.join(timeout=1)
+        self._worker.join()
 
     def _run(self) -> None:
-        while not self._stop.is_set():
+        while not self._stop.is_set() or self._has_pending_records():
             item = self._next_item()
             if item is None:
                 continue
@@ -65,6 +65,9 @@ class SessionRecorder:
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+    def _has_pending_records(self) -> bool:
+        return not self._frames.empty() or not self._important.empty()
 
     def _discard_one_frame(self) -> None:
         try:

@@ -19,6 +19,7 @@ from homeogrid.monitoring.core.snapshot_builder import SnapshotBuilder
 from homeogrid.monitoring.domain.dto import EpisodeSummaryView, OperatorEvent
 from homeogrid.monitoring.domain.enums import AlertLevel, OperatorCommandType, RunState
 from homeogrid.orchestration.command_bus import CommandBus
+from homeogrid.orchestration.run_artifacts import RunArtifacts
 from homeogrid.orchestration.run_state_store import RunStateStore
 
 
@@ -33,39 +34,43 @@ class ExperimentOrchestrator:
     command_bus: CommandBus
     run_state_store: RunStateStore
     experiment_config: ExperimentConfig
+    artifacts: RunArtifacts
 
     def __post_init__(self) -> None:
         self._stop = Event()
         self._metric_rows: list[dict] = []
         self._ablation_rows: list[dict] = []
         self._active_mode = "full"
+        self._active_phase = "train"
+        self._active_seed = self.experiment_config.base_seed
         self._full_planner_config = self.agent.planner.planner_config
 
     def run_train(self) -> None:
-        self.run_state_store.set_state(RunState.RUNNING)
-        self._run_batch(self.experiment_config.train_episodes, self.experiment_config.base_seed)
-        self._finalize()
+        self.run_protocol("full", eval_seen_episodes=0, eval_relocation_episodes=0)
 
     def run_eval(self) -> None:
-        self.run_state_store.set_state(RunState.RUNNING)
-        self._run_batch(self.experiment_config.eval_episodes_seen, self.experiment_config.base_seed + 10_000)
-        self._set_relocation(True)
-        self._run_batch(
-            self.experiment_config.eval_episodes_relocation,
-            self.experiment_config.base_seed + 20_000,
-        )
-        self._set_relocation(False)
-        self._finalize()
+        self.run_protocol("full", train_episodes=0)
 
     def run_ablation(self, mode: str) -> None:
-        self._active_mode = mode
-        self._apply_ablation(mode)
+        start_index = len(self._metric_rows)
+        self.run_protocol(mode, train_episodes=0, eval_relocation_episodes=0)
+        self._ablation_rows.extend(self._metric_rows[start_index:])
+        self.report_writer.write_ablations(self._ablation_rows)
+
+    def run_protocol(
+        self,
+        mode: str,
+        train_episodes: int | None = None,
+        eval_seen_episodes: int | None = None,
+        eval_relocation_episodes: int | None = None,
+    ) -> None:
+        self._activate_mode(mode)
         self.run_state_store.set_state(RunState.RUNNING)
-        self._run_batch(self.experiment_config.eval_episodes_seen, self.experiment_config.base_seed)
-        self._ablation_rows.extend(
-            [{**row, "mode": mode} for row in self._metric_rows[-self.experiment_config.eval_episodes_seen :]]
-        )
+        self._run_phase("train", self._episode_count(train_episodes, self.experiment_config.train_episodes), 0)
+        self._run_phase("eval_seen", self._episode_count(eval_seen_episodes, self.experiment_config.eval_episodes_seen), 10_000)
+        self._run_relocation_phase(eval_relocation_episodes)
         self._restore_full_mode()
+        self._finalize()
 
     def run_single_episode(self, seed: int) -> EpisodeSummary:
         episode_id = self.run_state_store.get_episode() + 1
@@ -104,7 +109,7 @@ class ExperimentOrchestrator:
         latest = self.monitoring.frame_buffer.latest()
         if latest is None:
             return None
-        path = Path("artifacts/snapshots") / latest.run_id / str(latest.episode_id) / f"{latest.world.step_idx}.json"
+        path = self.artifacts.snapshots_dir / latest.run_id / str(latest.episode_id) / f"{latest.world.step_idx}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(latest.model_dump_json(indent=2), encoding="utf-8")
         return str(path)
@@ -115,15 +120,26 @@ class ExperimentOrchestrator:
     def stop(self) -> None:
         self._stop.set()
 
+    def _run_phase(self, phase: str, episodes: int, offset: int) -> None:
+        if episodes <= 0:
+            return
+        self._active_phase = phase
+        self._run_batch(episodes, self.experiment_config.base_seed + offset)
+
     def _run_batch(self, episodes: int, base_seed: int) -> None:
         for index in range(episodes):
-            summary = self.run_single_episode(base_seed + index)
+            self._active_seed = base_seed + index
+            self.run_single_episode(self._active_seed)
             if self._stop.is_set():
                 break
 
     def _complete_episode(self, summary: EpisodeSummary, reset_requested: bool) -> EpisodeSummary:
         row = self.metrics.end_episode(summary)
         row["mode"] = self._active_mode
+        row["phase"] = self._active_phase
+        row["seed"] = self._active_seed
+        row["run_id"] = self.experiment_config.run_id
+        row["config_hash"] = self.agent.slow_memory.config_hash
         row["reset_requested"] = reset_requested
         self._metric_rows.append(row)
         self.report_writer.append_summary(row)
@@ -159,6 +175,10 @@ class ExperimentOrchestrator:
     def _set_relocation(self, enabled: bool) -> None:
         self.env.env_config = replace(self.env.env_config, enable_relocation=enabled)
 
+    def _activate_mode(self, mode: str) -> None:
+        self._active_mode = mode
+        self._apply_ablation(mode)
+
     def _apply_ablation(self, mode: str) -> None:
         self.agent.fast_memory.enabled = mode != "no_fast"
         self.agent.slow_memory.enabled = mode != "no_slow"
@@ -179,8 +199,21 @@ class ExperimentOrchestrator:
         self.agent.belief_map.known_mask[:] = True
         self.agent.belief_map.tile_ids[:] = self.env.state.tiles
 
+    def _run_relocation_phase(self, eval_relocation_episodes: int | None) -> None:
+        count = self._episode_count(eval_relocation_episodes, self.experiment_config.eval_episodes_relocation)
+        if count <= 0:
+            return
+        self._set_relocation(True)
+        self._run_phase("eval_relocation", count, 20_000)
+        self._set_relocation(False)
+
+    def _episode_count(self, override: int | None, default: int) -> int:
+        if override is None:
+            return default
+        return max(0, override)
+
     def _finalize(self) -> None:
-        self.agent.slow_memory.save("artifacts/memory/slow_memory.npz")
+        self.agent.slow_memory.save(str(self.artifacts.slow_memory_path))
         self.report_writer.write_metrics(self._metric_rows)
         self.report_writer.write_ablations(self._ablation_rows)
         self.run_state_store.set_state(RunState.ENDED)
