@@ -1,0 +1,69 @@
+run_id: ablation-run
+base_seed: 42
+train_episodes: 40
+eval_episodes_seen: 20
+eval_episodes_relocation: 10
+enable_monitoring: false
+save_monitor_stream: true
+save_metrics: true
+run_ablations: true
+ablation_modes:
+  - full
+  - no_fast
+  - no_slow
+  - no_interoception
+  - no_rough_cost
+  - full_observation
+env:
+  grid_size: 11
+  view_size: 5
+  episode_limit: 400
+  enable_relocation: true
+  relocation_step: 150
+  relocation_probability: 0.5
+  food_nodes_per_episode: 2
+  water_nodes_per_episode: 2
+  rough_patches_per_episode: 3
+body:
+  energy_start: 70
+  water_start: 70
+  energy_max: 100
+  water_max: 100
+  base_energy_cost: 1
+  base_water_cost: 1
+  move_extra_energy_cost: 1
+  rough_extra_energy_cost: 2
+  rough_extra_water_cost: 1
+  low_state_threshold: 15
+  low_state_move_extra_energy_cost: 1
+  interact_gain: 35
+reward:
+  energy_setpoint: 70
+  water_setpoint: 70
+  weight_energy: 0.5
+  weight_water: 0.5
+  action_cost_weight: 0.02
+  collision_penalty: 0.2
+  death_penalty: 5.0
+memory:
+  fast_max_age: 80
+  fast_max_events: 256
+  slow_decay: 0.995
+  slow_conf_threshold: 0.15
+  slow_top_k: 8
+planner:
+  turn_cost: 0.2
+  rough_cost: 3.0
+  unknown_cost: 1.5
+  max_plan_len: 64
+monitor:
+  ui_hz: 5
+  chart_history_sec: 120
+  frame_buffer_size: 600
+  raw_event_buffer_size: 4096
+  sse_ping_sec: 2.0
+  enable_debug_overlay: false
+  enable_blob3d: true
+  max_alerts_in_panel: 100
+  bind_host: 127.0.0.1
+  bind_port: 8000
