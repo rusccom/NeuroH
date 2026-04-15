@@ -2,15 +2,16 @@
 
 from dataclasses import dataclass
 
-from homeogrid.domain.enums import ActionType, Direction
-from homeogrid.domain.types import Plan, Pose, TargetProposal
+from homeogrid.domain.enums import ActionType, Direction, ExecutionMode
+from homeogrid.domain.types import Plan, Pose, TargetProposal, Vec2
 
 
 @dataclass
 class LowLevelController:
     def next_action(self, pose: Pose, proposal: TargetProposal, plan: Plan) -> ActionType:
-        if proposal.stance_pose and pose.x == proposal.stance_pose.x and pose.y == proposal.stance_pose.y:
-            return self._stance_action(pose.dir, proposal.stance_pose.dir)
+        stance_dir = self._stance_dir(pose, proposal)
+        if stance_dir is not None:
+            return self._stance_action(pose.dir, stance_dir)
         if not plan.valid:
             return ActionType.WAIT
         if not plan.waypoints:
@@ -30,6 +31,19 @@ class LowLevelController:
             return ActionType.WAIT
         return self._turn_towards(pose.dir, plan.final_dir)
 
+    def _stance_dir(self, pose: Pose, proposal: TargetProposal) -> Direction | None:
+        if proposal.stance_pose and self._same_cell(pose, proposal.stance_pose):
+            return proposal.stance_pose.dir
+        if (
+            proposal.execution_mode != ExecutionMode.DIRECT
+            or proposal.exact_cell is None
+            or proposal.resource_type is None
+        ):
+            return None
+        if not self._adjacent(pose, proposal.exact_cell):
+            return None
+        return self._desired_dir(pose, Pose(proposal.exact_cell.x, proposal.exact_cell.y, pose.dir))
+
     def _desired_dir(self, pose: Pose, next_pose: Pose) -> Direction:
         if next_pose.x > pose.x:
             return Direction.E
@@ -38,6 +52,12 @@ class LowLevelController:
         if next_pose.y > pose.y:
             return Direction.S
         return Direction.N
+
+    def _adjacent(self, pose: Pose, target: Vec2) -> bool:
+        return abs(target.x - pose.x) + abs(target.y - pose.y) == 1
+
+    def _same_cell(self, pose: Pose, other: Pose) -> bool:
+        return pose.x == other.x and pose.y == other.y
 
     def _turn_towards(self, current: Direction, desired: Direction) -> ActionType:
         if (int(desired) - int(current)) % 4 == 1:

@@ -10,6 +10,7 @@ from homeogrid.domain.enums import (
     ActionType,
     BiomeId,
     Direction,
+    ExecutionMode,
     EventType,
     ResourceType,
     TargetSource,
@@ -62,6 +63,7 @@ class TargetProposal:
     exact_cell: Vec2 | None = None
     region_cells: tuple[Vec2, ...] = ()
     stance_pose: Pose | None = None
+    execution_mode: ExecutionMode = ExecutionMode.DIRECT
 
 
 @dataclass(frozen=True)

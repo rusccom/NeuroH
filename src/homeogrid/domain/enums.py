@@ -54,6 +54,12 @@ class TargetSource(str, Enum):
     EXPLORE = "explore"
 
 
+class ExecutionMode(str, Enum):
+    DIRECT = "direct"
+    REGIONAL_EXPLORE = "regional_explore"
+    GLOBAL_EXPLORE = "global_explore"
+
+
 class EventType(str, Enum):
     RESOURCE_OBSERVED = "resource_observed"
     RESOURCE_CONSUMED = "resource_consumed"

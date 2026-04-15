@@ -28,7 +28,9 @@ class NeedTelemetry(BaseModel):
 
 
 class MemoryTelemetry(BaseModel):
+    guidance_source: DecisionSource
     decision_source: DecisionSource
+    execution_mode: str
     fast_confidence: float
     slow_confidence: float
     selected_confidence: float

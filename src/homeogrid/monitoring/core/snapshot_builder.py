@@ -35,7 +35,7 @@ class SnapshotBuilder:
     def build(self, run_id: str, episode_id: int, obs) -> StepSnapshot:
         state = self.working_buffer.state
         need = state.need_state
-        source, fast_conf, slow_conf, selected_conf = self._memory_inputs(state)
+        source, execution_mode, fast_conf, slow_conf, selected_conf = self._memory_inputs(state)
         return StepSnapshot(
             ts_ms=int(time() * 1000),
             run_id=run_id,
@@ -44,7 +44,7 @@ class SnapshotBuilder:
             behavior_mode=self.translator.behavior_mode(need.active_need if need else None, state.selected_action),
             body=self._body(obs),
             need=self._need(need),
-            memory=self._memory(state, source, fast_conf, slow_conf, selected_conf),
+            memory=self._memory(state, source, execution_mode, fast_conf, slow_conf, selected_conf),
             planner=self._planner(state),
             world=self._world(obs, state),
             belief_map=self._belief(),
@@ -102,10 +102,13 @@ class SnapshotBuilder:
 
     def _memory_inputs(self, state):
         source = state.selected_proposal.source if state.selected_proposal else None
+        execution_mode = "none"
+        if state.selected_proposal is not None:
+            execution_mode = state.selected_proposal.execution_mode.value
         fast_conf = state.fast_proposal.confidence if state.fast_proposal else 0.0
         slow_conf = state.slow_proposal.confidence if state.slow_proposal else 0.0
         selected_conf = state.selected_proposal.confidence if state.selected_proposal else 0.0
-        return source, fast_conf, slow_conf, selected_conf
+        return source, execution_mode, fast_conf, slow_conf, selected_conf
 
     def _body(self, obs) -> BodyTelemetry:
         return BodyTelemetry(
@@ -122,9 +125,12 @@ class SnapshotBuilder:
         critical = need.critical if need else False
         return NeedTelemetry(energy_deficit=energy, water_deficit=water, active_need=active, critical=critical, dominance=abs(energy - water))
 
-    def _memory(self, state, source, fast_conf: float, slow_conf: float, selected_conf: float) -> MemoryTelemetry:
+    def _memory(self, state, source, execution_mode: str, fast_conf: float, slow_conf: float, selected_conf: float) -> MemoryTelemetry:
+        guidance_source = self.translator.decision_source(source)
         return MemoryTelemetry(
-            decision_source=self.translator.decision_source(source),
+            guidance_source=guidance_source,
+            decision_source=guidance_source,
+            execution_mode=execution_mode,
             fast_confidence=fast_conf,
             slow_confidence=slow_conf,
             selected_confidence=selected_conf,

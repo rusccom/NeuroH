@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from homeogrid.agent.belief_map import BeliefMap
 from homeogrid.agent.working_buffer import WorkingBuffer
@@ -61,6 +61,7 @@ class AgentCore:
         slow = self._slow_query(need, biome)
         selected = self.arbiter.choose(need, fast, slow, self.belief_map)
         selected = self._expand_selected(obs, selected)
+        selected = self.planner.prepare_proposal(self.belief_map, obs.pose, selected)
         plan = self.planner.plan(self.belief_map, obs.pose, selected)
         action = self.controller.next_action(obs.pose, selected, plan)
         self.working_buffer.state.need_state = need
@@ -108,7 +109,11 @@ class AgentCore:
     def _expand_selected(self, obs: Observation, proposal):
         if proposal.source == TargetSource.SLOW and proposal.region_cells:
             regional = self.explorer.propose_in_region(self.belief_map, obs.pose, list(proposal.region_cells))
-            return regional
+            return replace(
+                proposal,
+                exact_cell=regional.exact_cell,
+                execution_mode=regional.execution_mode,
+            )
         if proposal.source == TargetSource.EXPLORE:
             return self.explorer.propose_global(self.belief_map, obs.pose)
         return proposal

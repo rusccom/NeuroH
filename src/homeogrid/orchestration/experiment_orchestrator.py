@@ -154,15 +154,17 @@ class ExperimentOrchestrator:
         self.monitoring.publish_episode_end(summary_view)
         return summary
 
-    def _publish_pending_events(self, episode_id: int) -> None:
-        for event in self.agent.consume_pending_events():
+    def _publish_events(self, events, episode_id: int) -> None:
+        latest = self.monitoring.frame_buffer.latest()
+        ts_ms = 0 if latest is None else latest.ts_ms
+        for event in events:
             level = AlertLevel.INFO if event.event_type != EventType.DEATH else AlertLevel.CRITICAL
             payload = OperatorEvent(
                 level=level,
                 code=event.event_type.value,
                 message=event.event_type.value,
                 step_idx=event.step_idx,
-                ts_ms=self.monitoring.frame_buffer.latest().ts_ms,
+                ts_ms=ts_ms,
             )
             self.monitoring.publish_event(payload, self.experiment_config.run_id, episode_id)
 
@@ -231,12 +233,13 @@ class ExperimentOrchestrator:
         next_obs, reward, terminated, truncated, info = self.env.step(action)
         transition = Transition(obs, action, next_obs, reward, terminated, truncated, info)
         self.agent.observe_transition(transition)
+        events = self.agent.consume_pending_events()
         selected = self.agent.working_buffer.state.selected_proposal
         source = selected.source if selected else None
-        self.metrics.on_step(transition, source)
+        self.metrics.on_step(transition, source, events)
         snapshot = self.snapshot_builder.build(self.experiment_config.run_id, episode_id, next_obs)
         self.monitoring.publish_step(snapshot)
-        self._publish_pending_events(episode_id)
+        self._publish_events(events, episode_id)
         return next_obs, reward, terminated, truncated
 
     def _episode_summary(self, episode_id: int, obs, total_reward: float) -> EpisodeSummary:

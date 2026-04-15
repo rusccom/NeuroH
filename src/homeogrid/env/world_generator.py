@@ -63,12 +63,6 @@ class WorldGenerator:
             blocked,
             rng,
         )
-
-    def _initial_body(self) -> BodyState:
-        return BodyState(self.body_config.energy_start, self.body_config.water_start, False, True)
-
-    def _blocked_cells(self) -> set[Vec2]:
-        return {LANDMARK_POS, Vec2(START_POSE.x, START_POSE.y)}
         self._place_near_center(
             tiles,
             biome.water_center,
@@ -77,6 +71,12 @@ class WorldGenerator:
             blocked,
             rng,
         )
+
+    def _initial_body(self) -> BodyState:
+        return BodyState(self.body_config.energy_start, self.body_config.water_start, False, True)
+
+    def _blocked_cells(self) -> set[Vec2]:
+        return {LANDMARK_POS, Vec2(START_POSE.x, START_POSE.y)}
 
     def _place_rough(
         self,

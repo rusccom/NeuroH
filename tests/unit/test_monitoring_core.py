@@ -1,9 +1,10 @@
-import time
+import json
 from pathlib import Path
 
 from homeogrid.decision.status_translator import StatusTranslator
 from homeogrid.monitoring.core.alert_engine import AlertEngine
 from homeogrid.monitoring.core.frame_ring_buffer import FrameRingBuffer
+from homeogrid.monitoring.core.replay_loader import ReplayLoader
 from homeogrid.monitoring.core.session_recorder import SessionRecorder
 from homeogrid.monitoring.domain.dto import (
     BeliefMapView,
@@ -45,7 +46,9 @@ def _need():
 
 def _memory():
     return MemoryTelemetry(
+        guidance_source=DecisionSource.FAST,
         decision_source=DecisionSource.FAST,
+        execution_mode="direct",
         fast_confidence=0.8,
         slow_confidence=0.7,
         selected_confidence=0.8,
@@ -85,8 +88,22 @@ def test_frame_ring_buffer_latest_and_tail():
 
 
 def test_session_recorder_writes_jsonl(tmp_path: Path):
-    recorder = SessionRecorder(str(tmp_path), 8)
-    recorder.record("run", 1, StreamEventType.FRAME, {"x": 1})
-    time.sleep(0.2)
+    recorder = SessionRecorder(str(tmp_path), 8, frame_stride=3)
+    for step_idx in range(1, 8):
+        recorder.record("run", 1, StreamEventType.FRAME, {"world": {"step_idx": step_idx}})
+    recorder.record("run", 1, StreamEventType.SUMMARY, {"episode_id": 1})
     recorder.close()
-    assert (tmp_path / "run" / "1.jsonl").exists()
+    lines = (tmp_path / "run" / "1.jsonl").read_text(encoding="utf-8").splitlines()
+    records = [json.loads(line) for line in lines]
+    frame_steps = [record["payload"]["world"]["step_idx"] for record in records if record["type"] == "frame"]
+    assert frame_steps == [1, 3, 6, 7]
+
+
+def test_replay_loader_returns_frame_records(tmp_path: Path):
+    recorder = SessionRecorder(str(tmp_path), 8, frame_stride=4)
+    recorder.record("run", 2, StreamEventType.FRAME, {"world": {"step_idx": 1}})
+    recorder.record("run", 2, StreamEventType.FRAME, {"world": {"step_idx": 2}})
+    recorder.record("run", 2, StreamEventType.SUMMARY, {"episode_id": 2})
+    recorder.close()
+    history = ReplayLoader(str(tmp_path)).load("run", 2)
+    assert any(record["type"] == "frame" for record in history["records"])

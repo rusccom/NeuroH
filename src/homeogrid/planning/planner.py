@@ -2,18 +2,26 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from heapq import heappop, heappush
 
 from homeogrid.agent.belief_map import BeliefMap
 from homeogrid.config.planner_config import PlannerConfig
-from homeogrid.domain.enums import CellType, Direction
+from homeogrid.domain.enums import CellType, Direction, ExecutionMode
 from homeogrid.domain.types import Plan, Pose, TargetProposal, Vec2
 
 
 @dataclass
 class Planner:
     planner_config: PlannerConfig
+
+    def prepare_proposal(self, belief_map: BeliefMap, pose: Pose, proposal: TargetProposal) -> TargetProposal:
+        if proposal.stance_pose is not None or not self._needs_stance(proposal):
+            return proposal
+        stance = self._stance_for_resource(belief_map, proposal.exact_cell, pose)
+        if stance is None:
+            return proposal
+        return replace(proposal, stance_pose=stance)
 
     def plan(self, belief_map: BeliefMap, pose: Pose, proposal: TargetProposal) -> Plan:
         target_pose = self._target_pose(belief_map, pose, proposal)
@@ -31,7 +39,9 @@ class Planner:
         pose: Pose,
         proposal: TargetProposal,
     ) -> Pose | None:
-        if proposal.exact_cell and proposal.resource_type:
+        if proposal.stance_pose is not None:
+            return proposal.stance_pose
+        if self._needs_stance(proposal):
             return self._stance_for_resource(belief_map, proposal.exact_cell, pose)
         if proposal.exact_cell:
             return Pose(proposal.exact_cell.x, proposal.exact_cell.y, pose.dir)
@@ -39,6 +49,13 @@ class Planner:
             cell = min(proposal.region_cells, key=lambda item: abs(item.x - pose.x) + abs(item.y - pose.y))
             return Pose(cell.x, cell.y, pose.dir)
         return None
+
+    def _needs_stance(self, proposal: TargetProposal) -> bool:
+        return (
+            proposal.exact_cell is not None
+            and proposal.resource_type is not None
+            and proposal.execution_mode == ExecutionMode.DIRECT
+        )
 
     def _stance_for_resource(self, belief_map: BeliefMap, cell: Vec2, pose: Pose) -> Pose | None:
         options = [

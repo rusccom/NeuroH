@@ -1,9 +1,9 @@
 """Exploration proposals."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from homeogrid.agent.belief_map import BeliefMap
-from homeogrid.domain.enums import TargetSource
+from homeogrid.domain.enums import ExecutionMode, TargetSource
 from homeogrid.domain.types import Pose, TargetProposal, Vec2
 
 
@@ -21,11 +21,24 @@ class ExplorerPolicy:
     ) -> TargetProposal:
         frontier = [cell for cell in belief_map.get_frontier_cells() if cell in region_cells]
         if frontier:
-            return self._best_frontier(frontier, pose)
+            proposal = self._best_frontier(frontier, pose)
+            return replace(proposal, execution_mode=ExecutionMode.REGIONAL_EXPLORE)
         return self.propose_global(belief_map, pose)
 
     def _best_frontier(self, frontier: list[Vec2], pose: Pose) -> TargetProposal:
         if not frontier:
-            return TargetProposal(TargetSource.EXPLORE, None, 0.0, exact_cell=Vec2(pose.x, pose.y))
+            return TargetProposal(
+                TargetSource.EXPLORE,
+                None,
+                0.0,
+                exact_cell=Vec2(pose.x, pose.y),
+                execution_mode=ExecutionMode.GLOBAL_EXPLORE,
+            )
         best = min(frontier, key=lambda pos: abs(pos.x - pose.x) + abs(pos.y - pose.y))
-        return TargetProposal(TargetSource.EXPLORE, None, 0.4, exact_cell=best)
+        return TargetProposal(
+            TargetSource.EXPLORE,
+            None,
+            0.4,
+            exact_cell=best,
+            execution_mode=ExecutionMode.GLOBAL_EXPLORE,
+        )

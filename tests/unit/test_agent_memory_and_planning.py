@@ -1,12 +1,17 @@
+import numpy as np
+
+from homeogrid.agent.core import AgentCore
 from homeogrid.agent.belief_map import BeliefMap
+from homeogrid.analytics.metrics import MetricsCollector
 from homeogrid.decision.arbiter import Arbiter
 from homeogrid.decision.biome_inferer import BiomeInferer
 from homeogrid.decision.drive_model import DriveModel
 from homeogrid.decision.event_detector import EventDetector
 from homeogrid.decision.explorer_policy import ExplorerPolicy
-from homeogrid.domain.enums import CellType, Direction, EventType, ResourceType, TargetSource
+from homeogrid.domain.enums import ActionType, CellType, Direction, EventType, ExecutionMode, ResourceType, TargetSource
 from homeogrid.domain.types import (
     BodyState,
+    EpisodeSummary,
     NeedState,
     Observation,
     Plan,
@@ -127,3 +132,52 @@ def test_biome_inferer_reads_landmark():
     obs.landmark_ids[2, 2] = 2
     biome = BiomeInferer().infer(obs, BeliefMap())
     assert biome.value == "B"
+
+
+def test_controller_interacts_when_resource_is_already_in_front():
+    controller = LowLevelController()
+    pose = Pose(5, 5, Direction.N)
+    proposal = TargetProposal(TargetSource.FAST, ResourceType.FOOD, 0.9, exact_cell=Vec2(5, 4))
+    plan = Plan(valid=True, final_dir=Direction.N)
+    action = controller.next_action(pose, proposal, plan)
+    assert action == ActionType.INTERACT
+
+
+def test_slow_guided_regional_search_keeps_slow_source():
+    belief = BeliefMap()
+    obs = Observation(
+        tiles=np.full((5, 5), int(CellType.EMPTY), dtype=np.int16),
+        landmark_ids=np.zeros((5, 5), dtype=np.int16),
+        pose=Pose(5, 5, Direction.N),
+        body=BodyState(30, 70, False, True),
+        step_idx=0,
+    )
+    belief.update(obs)
+    proposal = TargetProposal(
+        TargetSource.SLOW,
+        ResourceType.FOOD,
+        0.8,
+        region_cells=(Vec2(8, 5), Vec2(8, 4)),
+    )
+    agent = type(
+        "AgentStub",
+        (),
+        {"belief_map": belief, "explorer": ExplorerPolicy(), "_expand_selected": AgentCore._expand_selected},
+    )()
+    selected = agent._expand_selected(obs, proposal)
+    metrics = MetricsCollector()
+    metrics.begin_episode(obs)
+    transition = Transition(
+        prev_obs=obs,
+        action=ActionType.WAIT,
+        next_obs=Observation(obs.tiles, obs.landmark_ids, obs.pose, obs.body, 1),
+        reward=0.0,
+        terminated=False,
+        truncated=False,
+        info=StepInfo(False, False, False, False, 1, 1, False, None),
+    )
+    metrics.on_step(transition, selected.source, [])
+    row = metrics.end_episode(EpisodeSummary(1, None, 1, 0.0, False, None))
+    assert selected.source == TargetSource.SLOW
+    assert selected.execution_mode == ExecutionMode.REGIONAL_EXPLORE
+    assert row["source_slow_share"] == 1.0
