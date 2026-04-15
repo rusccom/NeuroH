@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass, field
 
-from homeogrid.domain.enums import ResourceType, TargetSource
-from homeogrid.domain.types import EpisodeSummary, Observation, Transition
+from homeogrid.domain.enums import EventType, ResourceType, TargetSource
+from homeogrid.domain.types import EpisodeSummary, Observation, SalientEvent, Transition
 
 
 @dataclass
@@ -26,9 +26,9 @@ class MetricsCollector:
     need_switch_count: int = 0
     stuck_windows: int = 0
     relocation_recovery_steps: int | None = None
+    relocation_recovery_success_rate: int = 0
     action_history: deque[str] = field(default_factory=lambda: deque(maxlen=64))
     pose_history: deque[tuple[int, int]] = field(default_factory=lambda: deque(maxlen=64))
-    _last_active_need: ResourceType | None = None
     _relocation_step: int | None = None
 
     def begin_episode(self, obs: Observation) -> None:
@@ -37,9 +37,13 @@ class MetricsCollector:
         self.pose_history.clear()
         self.pose_history.append((obs.pose.x, obs.pose.y))
         self.source_counts = self._empty_source_counts()
-        self._last_active_need = self._active_need(obs)
 
-    def on_step(self, transition: Transition, selected_source) -> None:
+    def on_step(
+        self,
+        transition: Transition,
+        selected_source,
+        events: list[SalientEvent] | None = None,
+    ) -> None:
         self.total_reward += transition.reward
         self.survival_steps += 1
         self._track_collision(transition)
@@ -49,7 +53,7 @@ class MetricsCollector:
         self._track_resource_timings(transition, selected_source, active_need)
         self._track_means(transition)
         self._track_source(selected_source)
-        self._track_need_switch(transition)
+        self._track_need_switch(events or [])
         self._track_stuck()
 
     def end_episode(self, summary: EpisodeSummary) -> dict:
@@ -66,6 +70,7 @@ class MetricsCollector:
             "need_switch_count": self.need_switch_count,
             "stuck_windows": self.stuck_windows,
             "relocation_recovery_steps": self.relocation_recovery_steps,
+            "relocation_recovery_success_rate": self.relocation_recovery_success_rate,
         }
 
     def _summary_fields(self, summary: EpisodeSummary) -> dict:
@@ -117,6 +122,7 @@ class MetricsCollector:
         self.need_switch_count = 0
         self.stuck_windows = 0
         self.relocation_recovery_steps = None
+        self.relocation_recovery_success_rate = 0
         self._relocation_step = None
 
     def _empty_source_counts(self) -> dict[str, int]:
@@ -150,11 +156,8 @@ class MetricsCollector:
         self.mean_energy_deficit += energy_gap
         self.mean_water_deficit += water_gap
 
-    def _track_need_switch(self, transition: Transition) -> None:
-        current_need = self._active_need(transition.next_obs)
-        if self._last_active_need and current_need and current_need != self._last_active_need:
-            self.need_switch_count += 1
-        self._last_active_need = current_need
+    def _track_need_switch(self, events: list[SalientEvent]) -> None:
+        self.need_switch_count += sum(1 for event in events if event.event_type == EventType.NEED_SWITCH)
 
     def _track_stuck(self) -> None:
         if self.stuck_window():
@@ -197,6 +200,7 @@ class MetricsCollector:
         if self._relocation_step is None or self.relocation_recovery_steps is not None:
             return
         self.relocation_recovery_steps = step_idx - self._relocation_step
+        self.relocation_recovery_success_rate = 1
         self._relocation_step = None
 
     def _consumed_resource(self, transition: Transition) -> ResourceType | None:

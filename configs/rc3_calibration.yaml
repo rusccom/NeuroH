@@ -1,8 +1,8 @@
-run_id: ablation-run
+run_id: rc3-calibration
 base_seed: 42
-train_episodes: 40
-eval_episodes_seen: 20
-eval_episodes_relocation: 0
+train_episodes: 0
+eval_episodes_seen: 0
+eval_episodes_relocation: 10
 enable_monitoring: false
 save_monitor_stream: true
 save_metrics: true
@@ -18,7 +18,7 @@ env:
   grid_size: 11
   view_size: 5
   episode_limit: 400
-  enable_relocation: false
+  enable_relocation: true
   relocation_step: 45
   relocation_probability: 1.0
   food_nodes_per_episode: 2

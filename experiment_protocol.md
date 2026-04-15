@@ -2,8 +2,8 @@
 
 ## Frozen Build
 
-- Code tag: `mvp-rc1`
-- Frozen configs: `configs/full.yaml`, `configs/ablation.yaml`
+- Code tag: `mvp-rc3`
+- Frozen configs: `configs/full.yaml`, `configs/ablation.yaml`, `configs/rc3_calibration.yaml`
 - Frozen dependency lock: `requirements.lock`
 - Frozen seed files: `configs/seeds/official.txt`, `configs/seeds/pilot.txt`
 
@@ -35,10 +35,16 @@ Seed replacement by hand is not allowed after the protocol is frozen.
 
 ## Episode Budgets
 
-Pilot uses `configs/ablation.yaml`:
+Pilot core uses `configs/ablation.yaml`:
 
 - `train = 40`
 - `eval_seen = 20`
+- `eval_relocation = 0`
+
+Pilot relocation uses `configs/rc3_calibration.yaml`:
+
+- `train = 0`
+- `eval_seen = 0`
 - `eval_relocation = 10`
 
 Main uses `configs/full.yaml`:
@@ -52,6 +58,7 @@ Main uses `configs/full.yaml`:
 - `steps_to_first_needed_resource`
 - `return_steps_to_seen_resource`
 - `survival_steps`
+- `relocation_recovery_success_rate`
 - `relocation_recovery_steps`
 - `mean_energy_deficit`
 - `mean_water_deficit`
@@ -70,8 +77,9 @@ Auxiliary artifacts per run:
 
 - `full` vs `no_slow`: lower `steps_to_first_needed_resource` is better
 - `full` vs `no_fast`: lower `return_steps_to_seen_resource` is better
+- `full` vs `no_fast`: higher `relocation_recovery_success_rate` is better
+- `full` vs `no_fast`: lower `relocation_recovery_steps` is better when recovery happened
 - `full` vs `no_interoception`: higher `survival_steps` is better
-- `full` vs `no_fast`: lower `relocation_recovery_steps` is better
 
 ## Comparison Formulae
 
@@ -117,13 +125,19 @@ Before pilot and before main:
 Freeze:
 
 ```bash
-python -m homeogrid.app.main freeze --tag mvp-rc1
+python -m homeogrid.app.main freeze --tag mvp-rc3
 ```
 
-Pilot:
+Pilot core:
 
 ```bash
-python -m homeogrid.app.main run-matrix --config configs/ablation.yaml --seeds configs/seeds/pilot.txt --modes full,no_fast,no_slow,no_interoception --summary-name pilot_summary.csv
+python -m homeogrid.app.main run-matrix --config configs/ablation.yaml --seeds configs/seeds/pilot.txt --modes full,no_fast,no_slow,no_interoception --summary-name pilot_core_summary.csv
+```
+
+Pilot relocation:
+
+```text
+Run eval_relocation on configs/rc3_calibration.yaml after the core phase, reusing the trained slow_memory for the same mode/seed artifacts root.
 ```
 
 Main:

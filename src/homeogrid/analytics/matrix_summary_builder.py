@@ -11,6 +11,7 @@ SUMMARY_METRICS = (
     "return_steps_to_seen_resource",
     "survival_steps",
     "relocation_recovery_steps",
+    "relocation_recovery_success_rate",
     "mean_energy_deficit",
     "mean_water_deficit",
     "source_fast_share",

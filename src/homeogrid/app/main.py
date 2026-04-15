@@ -24,7 +24,7 @@ def main() -> None:
     replay_parser = subparsers.add_parser("replay")
     replay_parser.add_argument("--file", required=True)
     freeze_parser = subparsers.add_parser("freeze")
-    freeze_parser.add_argument("--tag", default="mvp-rc1")
+    freeze_parser.add_argument("--tag", default="mvp-rc3")
     freeze_parser.add_argument("--config", action="append")
     freeze_parser.add_argument("--seeds", action="append")
     matrix_parser = subparsers.add_parser("run-matrix")
@@ -81,7 +81,11 @@ def _paths(raw_paths: list[str]) -> tuple[Path, ...]:
 
 
 def _freeze_configs(raw_paths: list[str] | None) -> tuple[Path, ...]:
-    default_paths = ["configs/full.yaml", "configs/ablation.yaml"]
+    default_paths = [
+        "configs/full.yaml",
+        "configs/ablation.yaml",
+        "configs/rc3_calibration.yaml",
+    ]
     return _paths(default_paths if raw_paths is None else raw_paths)
 
 
