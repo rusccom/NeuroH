@@ -68,14 +68,6 @@ git push origin main
 
 Push other branches only if they were intentionally created.
 
-## Core Engineering Rules
-
-- Rule `5-300-20-3`: no more than 5 function parameters, 300 lines per file, 20 lines per method, 3 nesting levels
-- One class or component per file
-- Use feature-based structure
-- Do not create tests, extra `.md` files, or extra instructions unless explicitly requested
-- Use Context7 when code generation, setup, configuration, or library/API docs are involved
-
 ## Research and Release Discipline
 
 This repo follows strict freeze discipline.
@@ -112,6 +104,31 @@ Known baseline fact:
 
 - wave 1 in rc3 is single-biome (`BiomeId.B`) due to `_pick_biome`
 - this is a documented limitation, not a reason to mutate rc3 after the fact
+
+## Known Open Investigation Items
+
+These are not forgotten problems. These are explicitly deferred investigation items.
+
+Keep this list short, concrete, and tied to evidence. Add an item here when:
+
+- the issue is real or strongly evidenced
+- it was intentionally not fixed in the frozen baseline
+- it must be revisited in a future architectural cycle
+
+For each item, record:
+
+- what is wrong or unknown
+- what artifact proves it
+- why it was deferred
+- in which future cycle it must be reopened
+
+Current items:
+
+- `_pick_biome` / biome distribution defect
+  Evidence: `projects/homeogrid-mvp-rc3/artifacts/official_wave1/**/logs/episode_summaries.jsonl` and release `biome_audit.json` show wave 1 runs only in `BiomeId.B`
+  Consequence: rc3 results are valid as within-biome comparisons only; biome generalization is not demonstrated
+  Status: explicitly deferred, do not patch inside frozen rc3
+  Reopen in: v2 baseline investigation, starting from `projects/homeoorganism/`
 
 ## Artifact Policy
 
