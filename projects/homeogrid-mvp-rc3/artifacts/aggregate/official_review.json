@@ -1,0 +1,169 @@
+{
+  "run_count": 40,
+  "episode_count": 14000,
+  "comparisons": [
+    {
+      "phase": "train",
+      "baseline_mode": "no_slow",
+      "metric": "steps_to_first_needed_resource",
+      "direction": "lower",
+      "full_value": 10.366,
+      "baseline_value": 22.6795,
+      "improvement": 0.5429352498952799,
+      "status": "pass"
+    },
+    {
+      "phase": "eval_seen",
+      "baseline_mode": "no_fast",
+      "metric": "return_steps_to_seen_resource",
+      "direction": "lower",
+      "full_value": 10.317,
+      "baseline_value": null,
+      "improvement": null,
+      "status": "missing_metric"
+    },
+    {
+      "phase": "eval_relocation",
+      "baseline_mode": "no_fast",
+      "metric": "return_steps_to_seen_resource",
+      "direction": "lower",
+      "full_value": 10.214,
+      "baseline_value": null,
+      "improvement": null,
+      "status": "missing_metric"
+    },
+    {
+      "phase": "eval_relocation",
+      "baseline_mode": "no_fast",
+      "metric": "relocation_recovery_success_rate",
+      "direction": "higher",
+      "full_value": 0.704,
+      "baseline_value": 0.0,
+      "improvement": null,
+      "status": "baseline_zero"
+    },
+    {
+      "phase": "eval_relocation",
+      "baseline_mode": "no_fast",
+      "metric": "relocation_recovery_steps",
+      "direction": "lower",
+      "full_value": 2.6704545454545454,
+      "baseline_value": null,
+      "improvement": null,
+      "status": "missing_metric"
+    },
+    {
+      "phase": "train",
+      "baseline_mode": "no_interoception",
+      "metric": "survival_steps",
+      "direction": "higher",
+      "full_value": 93.8035,
+      "baseline_value": 69.912,
+      "improvement": 0.34173675477743437,
+      "status": "pass"
+    },
+    {
+      "phase": "eval_seen",
+      "baseline_mode": "no_interoception",
+      "metric": "survival_steps",
+      "direction": "higher",
+      "full_value": 94.01,
+      "baseline_value": 69.926,
+      "improvement": 0.34442124531647744,
+      "status": "pass"
+    },
+    {
+      "phase": "eval_relocation",
+      "baseline_mode": "no_interoception",
+      "metric": "survival_steps",
+      "direction": "higher",
+      "full_value": 93.716,
+      "baseline_value": 69.938,
+      "improvement": 0.3399868454917211,
+      "status": "pass"
+    }
+  ],
+  "interoception_signals": [
+    {
+      "phase": "train",
+      "full_need_switch_count": 5.695,
+      "no_interoception_need_switch_count": 0.0,
+      "full_mean_energy_deficit": 0.38125177020268075,
+      "no_interoception_mean_energy_deficit": 0.20520581336882576,
+      "full_mean_water_deficit": 0.30717774405664755,
+      "no_interoception_mean_water_deficit": 0.5072465838509316
+    },
+    {
+      "phase": "eval_seen",
+      "full_need_switch_count": 5.704,
+      "no_interoception_need_switch_count": 0.0,
+      "full_mean_energy_deficit": 0.38170378372563574,
+      "no_interoception_mean_energy_deficit": 0.20491060928719312,
+      "full_mean_water_deficit": 0.3035287598183576,
+      "no_interoception_mean_water_deficit": 0.50721884057971
+    },
+    {
+      "phase": "eval_relocation",
+      "full_need_switch_count": 5.722,
+      "no_interoception_need_switch_count": 0.0,
+      "full_mean_energy_deficit": 0.38114995121389184,
+      "no_interoception_mean_energy_deficit": 0.2047964330079858,
+      "full_mean_water_deficit": 0.3081355910692212,
+      "no_interoception_mean_water_deficit": 0.5072076604554864
+    }
+  ],
+  "source_checks_train": {
+    "full": {
+      "source_fast_share": 0.39646925065777017,
+      "source_slow_share": 0.3874006830708245,
+      "source_explore_share": 0.2161300662714054
+    },
+    "no_fast": {
+      "source_fast_share": 0.0,
+      "source_slow_share": 0.9174405429864254,
+      "source_explore_share": 0.08255945701357466
+    },
+    "no_slow": {
+      "source_fast_share": 0.40109894990588535,
+      "source_slow_share": 0.0,
+      "source_explore_share": 0.5989010500941147
+    },
+    "no_interoception": {
+      "source_fast_share": 0.11696666666666666,
+      "source_slow_share": 0.5465359213250517,
+      "source_explore_share": 0.3364974120082816
+    }
+  },
+  "source_check_status": {
+    "full_slow_gt_zero": true,
+    "no_slow_slow_near_zero": true,
+    "no_fast_fast_near_zero": true
+  },
+  "relocation_overview": {
+    "full": {
+      "relocation_recovery_success_rate": 0.704,
+      "relocation_recovery_steps": 2.6704545454545454,
+      "post_relocation_life": 48.716,
+      "survival_steps": 93.716
+    },
+    "no_fast": {
+      "relocation_recovery_success_rate": 0.0,
+      "relocation_recovery_steps": null,
+      "post_relocation_life": 6.396,
+      "survival_steps": 51.396
+    },
+    "no_slow": {
+      "relocation_recovery_success_rate": 0.562,
+      "relocation_recovery_steps": 6.427046263345196,
+      "post_relocation_life": 39.396,
+      "survival_steps": 84.396
+    },
+    "no_interoception": {
+      "relocation_recovery_success_rate": 0.0,
+      "relocation_recovery_steps": null,
+      "post_relocation_life": 24.938,
+      "survival_steps": 69.938
+    }
+  },
+  "replay_cases_path": "C:\\Users\\User\\Desktop\\GameWeb\\NeuroH\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_replay_cases.csv"
+}

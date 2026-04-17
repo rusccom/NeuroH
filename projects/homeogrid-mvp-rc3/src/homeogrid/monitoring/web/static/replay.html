@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HomeoGrid Replay</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body data-mode="replay">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">HomeoGrid Experimental Platform</p>
+      <h1>Replay Viewer</h1>
+    </div>
+    <div class="status-row">
+      <span id="run-state" class="pill">replay</span>
+      <span id="connection-state" class="pill muted">history</span>
+      <span id="episode-state" class="pill muted">frame -</span>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <section class="panel hero-panel">
+      <div class="hero-metrics" id="kpi-grid"></div>
+      <div class="controls">
+        <input id="replay-slider" type="range" min="0" max="0" value="0">
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Belief Map</h2>
+        <p id="target-state">Target: -</p>
+      </div>
+      <canvas id="map-canvas" width="440" height="440"></canvas>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Signals</h2>
+        <p>Frame-local replay state</p>
+      </div>
+      <div id="chart-root" class="chart-root"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Homeostat Globe</h2>
+        <p>Replay rendering</p>
+      </div>
+      <div id="blob-root" class="blob-root"></div>
+    </section>
+
+    <section class="panel event-panel">
+      <div class="panel-head">
+        <h2>History</h2>
+        <p>Frames / alerts / summaries</p>
+      </div>
+      <div id="event-list" class="event-list"></div>
+    </section>
+  </main>
+
+  <script src="/static/vendor/echarts.min.js"></script>
+  <script type="module" src="/static/app.js"></script>
+</body>
+</html>

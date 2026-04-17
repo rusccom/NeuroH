@@ -1,0 +1,162 @@
+2026-04-15T15:20:04.135548+00:00 baseline=mvp-rc3 commit=7ffb5e04a022f7b905b002719dca35ef330e5b90
+2026-04-15T15:20:04.135895+00:00 core start mode=full seed=101 root=artifacts/official_wave1/core/full/seed_101
+2026-04-15T15:21:51.902834+00:00 core done mode=full seed=101
+2026-04-15T15:21:51.903447+00:00 core start mode=full seed=202 root=artifacts/official_wave1/core/full/seed_202
+2026-04-15T15:23:48.339974+00:00 core done mode=full seed=202
+2026-04-15T15:23:48.340491+00:00 core start mode=full seed=303 root=artifacts/official_wave1/core/full/seed_303
+2026-04-15T15:25:59.309949+00:00 core done mode=full seed=303
+2026-04-15T15:25:59.312308+00:00 core start mode=full seed=404 root=artifacts/official_wave1/core/full/seed_404
+2026-04-15T15:27:59.620553+00:00 core done mode=full seed=404
+2026-04-15T15:27:59.621020+00:00 core start mode=full seed=505 root=artifacts/official_wave1/core/full/seed_505
+2026-04-15T15:30:11.273179+00:00 core done mode=full seed=505
+2026-04-15T15:30:11.273697+00:00 core start mode=full seed=606 root=artifacts/official_wave1/core/full/seed_606
+2026-04-15T15:32:15.867413+00:00 core done mode=full seed=606
+2026-04-15T15:32:15.867988+00:00 core start mode=full seed=707 root=artifacts/official_wave1/core/full/seed_707
+2026-04-15T15:34:32.344406+00:00 core done mode=full seed=707
+2026-04-15T15:34:32.344959+00:00 core start mode=full seed=808 root=artifacts/official_wave1/core/full/seed_808
+2026-04-15T15:36:55.086428+00:00 core done mode=full seed=808
+2026-04-15T15:36:55.087573+00:00 core start mode=full seed=909 root=artifacts/official_wave1/core/full/seed_909
+2026-04-15T15:39:20.124454+00:00 core done mode=full seed=909
+2026-04-15T15:39:20.125113+00:00 core start mode=full seed=1001 root=artifacts/official_wave1/core/full/seed_1001
+2026-04-15T15:41:36.413234+00:00 core done mode=full seed=1001
+2026-04-15T15:41:36.413815+00:00 core start mode=no_fast seed=101 root=artifacts/official_wave1/core/no_fast/seed_101
+2026-04-15T15:43:14.722416+00:00 core done mode=no_fast seed=101
+2026-04-15T15:43:14.723334+00:00 core start mode=no_fast seed=202 root=artifacts/official_wave1/core/no_fast/seed_202
+2026-04-15T15:44:52.390378+00:00 core done mode=no_fast seed=202
+2026-04-15T15:44:52.391002+00:00 core start mode=no_fast seed=303 root=artifacts/official_wave1/core/no_fast/seed_303
+2026-04-15T15:46:28.800006+00:00 core done mode=no_fast seed=303
+2026-04-15T15:46:28.800676+00:00 core start mode=no_fast seed=404 root=artifacts/official_wave1/core/no_fast/seed_404
+2026-04-15T15:47:58.204259+00:00 core done mode=no_fast seed=404
+2026-04-15T15:47:58.204905+00:00 core start mode=no_fast seed=505 root=artifacts/official_wave1/core/no_fast/seed_505
+2026-04-15T15:49:21.473854+00:00 core done mode=no_fast seed=505
+2026-04-15T15:49:21.474642+00:00 core start mode=no_fast seed=606 root=artifacts/official_wave1/core/no_fast/seed_606
+2026-04-15T15:50:49.813997+00:00 core done mode=no_fast seed=606
+2026-04-15T15:50:49.814495+00:00 core start mode=no_fast seed=707 root=artifacts/official_wave1/core/no_fast/seed_707
+2026-04-15T15:52:13.654612+00:00 core done mode=no_fast seed=707
+2026-04-15T15:52:13.655172+00:00 core start mode=no_fast seed=808 root=artifacts/official_wave1/core/no_fast/seed_808
+2026-04-15T15:53:28.145849+00:00 core done mode=no_fast seed=808
+2026-04-15T15:53:28.146765+00:00 core start mode=no_fast seed=909 root=artifacts/official_wave1/core/no_fast/seed_909
+2026-04-15T15:54:52.582826+00:00 core done mode=no_fast seed=909
+2026-04-15T15:54:52.583438+00:00 core start mode=no_fast seed=1001 root=artifacts/official_wave1/core/no_fast/seed_1001
+2026-04-15T15:56:29.102269+00:00 core done mode=no_fast seed=1001
+2026-04-15T15:56:29.102973+00:00 core start mode=no_slow seed=101 root=artifacts/official_wave1/core/no_slow/seed_101
+2026-04-15T15:58:16.485448+00:00 core done mode=no_slow seed=101
+2026-04-15T15:58:16.486076+00:00 core start mode=no_slow seed=202 root=artifacts/official_wave1/core/no_slow/seed_202
+2026-04-15T15:59:58.929345+00:00 core done mode=no_slow seed=202
+2026-04-15T15:59:58.929909+00:00 core start mode=no_slow seed=303 root=artifacts/official_wave1/core/no_slow/seed_303
+2026-04-15T16:01:38.634517+00:00 core done mode=no_slow seed=303
+2026-04-15T16:01:38.635294+00:00 core start mode=no_slow seed=404 root=artifacts/official_wave1/core/no_slow/seed_404
+2026-04-15T16:03:20.041664+00:00 core done mode=no_slow seed=404
+2026-04-15T16:03:20.042229+00:00 core start mode=no_slow seed=505 root=artifacts/official_wave1/core/no_slow/seed_505
+2026-04-15T16:04:38.062870+00:00 core done mode=no_slow seed=505
+2026-04-15T16:04:38.063501+00:00 core start mode=no_slow seed=606 root=artifacts/official_wave1/core/no_slow/seed_606
+2026-04-15T16:05:56.178849+00:00 core done mode=no_slow seed=606
+2026-04-15T16:05:56.179454+00:00 core start mode=no_slow seed=707 root=artifacts/official_wave1/core/no_slow/seed_707
+2026-04-15T16:07:11.771162+00:00 core done mode=no_slow seed=707
+2026-04-15T16:07:11.771899+00:00 core start mode=no_slow seed=808 root=artifacts/official_wave1/core/no_slow/seed_808
+2026-04-15T16:08:29.165256+00:00 core done mode=no_slow seed=808
+2026-04-15T16:08:29.165980+00:00 core start mode=no_slow seed=909 root=artifacts/official_wave1/core/no_slow/seed_909
+2026-04-15T16:09:47.780349+00:00 core done mode=no_slow seed=909
+2026-04-15T16:09:47.780906+00:00 core start mode=no_slow seed=1001 root=artifacts/official_wave1/core/no_slow/seed_1001
+2026-04-15T16:11:10.563854+00:00 core done mode=no_slow seed=1001
+2026-04-15T16:11:10.564528+00:00 core start mode=no_interoception seed=101 root=artifacts/official_wave1/core/no_interoception/seed_101
+2026-04-15T16:12:34.308045+00:00 core done mode=no_interoception seed=101
+2026-04-15T16:12:34.308629+00:00 core start mode=no_interoception seed=202 root=artifacts/official_wave1/core/no_interoception/seed_202
+2026-04-15T16:13:51.853862+00:00 core done mode=no_interoception seed=202
+2026-04-15T16:13:51.854600+00:00 core start mode=no_interoception seed=303 root=artifacts/official_wave1/core/no_interoception/seed_303
+2026-04-15T16:15:05.503557+00:00 core done mode=no_interoception seed=303
+2026-04-15T16:15:05.504127+00:00 core start mode=no_interoception seed=404 root=artifacts/official_wave1/core/no_interoception/seed_404
+2026-04-15T16:16:17.138534+00:00 core done mode=no_interoception seed=404
+2026-04-15T16:16:17.139045+00:00 core start mode=no_interoception seed=505 root=artifacts/official_wave1/core/no_interoception/seed_505
+2026-04-15T16:17:28.489178+00:00 core done mode=no_interoception seed=505
+2026-04-15T16:17:28.489826+00:00 core start mode=no_interoception seed=606 root=artifacts/official_wave1/core/no_interoception/seed_606
+2026-04-15T16:18:40.958597+00:00 core done mode=no_interoception seed=606
+2026-04-15T16:18:40.959154+00:00 core start mode=no_interoception seed=707 root=artifacts/official_wave1/core/no_interoception/seed_707
+2026-04-15T16:19:55.104807+00:00 core done mode=no_interoception seed=707
+2026-04-15T16:19:55.105398+00:00 core start mode=no_interoception seed=808 root=artifacts/official_wave1/core/no_interoception/seed_808
+2026-04-15T16:21:03.045712+00:00 core done mode=no_interoception seed=808
+2026-04-15T16:21:03.046245+00:00 core start mode=no_interoception seed=909 root=artifacts/official_wave1/core/no_interoception/seed_909
+2026-04-15T16:22:08.155231+00:00 core done mode=no_interoception seed=909
+2026-04-15T16:22:08.155896+00:00 core start mode=no_interoception seed=1001 root=artifacts/official_wave1/core/no_interoception/seed_1001
+2026-04-15T16:23:11.965213+00:00 core done mode=no_interoception seed=1001
+2026-04-15T16:23:11.969268+00:00 relocation start mode=full seed=101 root=artifacts/official_wave1/relocation/full/seed_101
+2026-04-15T16:23:27.147027+00:00 relocation done mode=full seed=101
+2026-04-15T16:23:27.149403+00:00 relocation start mode=full seed=202 root=artifacts/official_wave1/relocation/full/seed_202
+2026-04-15T16:23:42.615090+00:00 relocation done mode=full seed=202
+2026-04-15T16:23:42.617067+00:00 relocation start mode=full seed=303 root=artifacts/official_wave1/relocation/full/seed_303
+2026-04-15T16:23:57.762609+00:00 relocation done mode=full seed=303
+2026-04-15T16:23:57.765027+00:00 relocation start mode=full seed=404 root=artifacts/official_wave1/relocation/full/seed_404
+2026-04-15T16:24:13.955477+00:00 relocation done mode=full seed=404
+2026-04-15T16:24:13.958171+00:00 relocation start mode=full seed=505 root=artifacts/official_wave1/relocation/full/seed_505
+2026-04-15T16:24:29.933552+00:00 relocation done mode=full seed=505
+2026-04-15T16:24:29.936369+00:00 relocation start mode=full seed=606 root=artifacts/official_wave1/relocation/full/seed_606
+2026-04-15T16:24:45.827764+00:00 relocation done mode=full seed=606
+2026-04-15T16:24:45.831683+00:00 relocation start mode=full seed=707 root=artifacts/official_wave1/relocation/full/seed_707
+2026-04-15T16:25:02.775569+00:00 relocation done mode=full seed=707
+2026-04-15T16:25:02.777872+00:00 relocation start mode=full seed=808 root=artifacts/official_wave1/relocation/full/seed_808
+2026-04-15T16:25:18.615527+00:00 relocation done mode=full seed=808
+2026-04-15T16:25:18.618299+00:00 relocation start mode=full seed=909 root=artifacts/official_wave1/relocation/full/seed_909
+2026-04-15T16:25:33.645034+00:00 relocation done mode=full seed=909
+2026-04-15T16:25:33.647317+00:00 relocation start mode=full seed=1001 root=artifacts/official_wave1/relocation/full/seed_1001
+2026-04-15T16:25:49.112150+00:00 relocation done mode=full seed=1001
+2026-04-15T16:25:49.115544+00:00 relocation start mode=no_fast seed=101 root=artifacts/official_wave1/relocation/no_fast/seed_101
+2026-04-15T16:26:00.218109+00:00 relocation done mode=no_fast seed=101
+2026-04-15T16:26:00.220892+00:00 relocation start mode=no_fast seed=202 root=artifacts/official_wave1/relocation/no_fast/seed_202
+2026-04-15T16:26:11.497395+00:00 relocation done mode=no_fast seed=202
+2026-04-15T16:26:11.499879+00:00 relocation start mode=no_fast seed=303 root=artifacts/official_wave1/relocation/no_fast/seed_303
+2026-04-15T16:26:20.758554+00:00 relocation done mode=no_fast seed=303
+2026-04-15T16:26:20.761776+00:00 relocation start mode=no_fast seed=404 root=artifacts/official_wave1/relocation/no_fast/seed_404
+2026-04-15T16:26:30.050047+00:00 relocation done mode=no_fast seed=404
+2026-04-15T16:26:30.052662+00:00 relocation start mode=no_fast seed=505 root=artifacts/official_wave1/relocation/no_fast/seed_505
+2026-04-15T16:26:39.617236+00:00 relocation done mode=no_fast seed=505
+2026-04-15T16:26:39.620160+00:00 relocation start mode=no_fast seed=606 root=artifacts/official_wave1/relocation/no_fast/seed_606
+2026-04-15T16:26:49.392529+00:00 relocation done mode=no_fast seed=606
+2026-04-15T16:26:49.396873+00:00 relocation start mode=no_fast seed=707 root=artifacts/official_wave1/relocation/no_fast/seed_707
+2026-04-15T16:27:00.006403+00:00 relocation done mode=no_fast seed=707
+2026-04-15T16:27:00.009033+00:00 relocation start mode=no_fast seed=808 root=artifacts/official_wave1/relocation/no_fast/seed_808
+2026-04-15T16:27:09.081393+00:00 relocation done mode=no_fast seed=808
+2026-04-15T16:27:09.083669+00:00 relocation start mode=no_fast seed=909 root=artifacts/official_wave1/relocation/no_fast/seed_909
+2026-04-15T16:27:18.098198+00:00 relocation done mode=no_fast seed=909
+2026-04-15T16:27:18.100246+00:00 relocation start mode=no_fast seed=1001 root=artifacts/official_wave1/relocation/no_fast/seed_1001
+2026-04-15T16:27:28.492656+00:00 relocation done mode=no_fast seed=1001
+2026-04-15T16:27:28.495778+00:00 relocation start mode=no_slow seed=101 root=artifacts/official_wave1/relocation/no_slow/seed_101
+2026-04-15T16:27:41.716541+00:00 relocation done mode=no_slow seed=101
+2026-04-15T16:27:41.719218+00:00 relocation start mode=no_slow seed=202 root=artifacts/official_wave1/relocation/no_slow/seed_202
+2026-04-15T16:27:53.132802+00:00 relocation done mode=no_slow seed=202
+2026-04-15T16:27:53.135083+00:00 relocation start mode=no_slow seed=303 root=artifacts/official_wave1/relocation/no_slow/seed_303
+2026-04-15T16:28:04.576694+00:00 relocation done mode=no_slow seed=303
+2026-04-15T16:28:04.579362+00:00 relocation start mode=no_slow seed=404 root=artifacts/official_wave1/relocation/no_slow/seed_404
+2026-04-15T16:28:17.120843+00:00 relocation done mode=no_slow seed=404
+2026-04-15T16:28:17.124185+00:00 relocation start mode=no_slow seed=505 root=artifacts/official_wave1/relocation/no_slow/seed_505
+2026-04-15T16:28:29.543564+00:00 relocation done mode=no_slow seed=505
+2026-04-15T16:28:29.546506+00:00 relocation start mode=no_slow seed=606 root=artifacts/official_wave1/relocation/no_slow/seed_606
+2026-04-15T16:28:40.979814+00:00 relocation done mode=no_slow seed=606
+2026-04-15T16:28:40.982778+00:00 relocation start mode=no_slow seed=707 root=artifacts/official_wave1/relocation/no_slow/seed_707
+2026-04-15T16:28:53.383907+00:00 relocation done mode=no_slow seed=707
+2026-04-15T16:28:53.386973+00:00 relocation start mode=no_slow seed=808 root=artifacts/official_wave1/relocation/no_slow/seed_808
+2026-04-15T16:29:08.339464+00:00 relocation done mode=no_slow seed=808
+2026-04-15T16:29:08.343047+00:00 relocation start mode=no_slow seed=909 root=artifacts/official_wave1/relocation/no_slow/seed_909
+2026-04-15T16:29:20.870952+00:00 relocation done mode=no_slow seed=909
+2026-04-15T16:29:20.873774+00:00 relocation start mode=no_slow seed=1001 root=artifacts/official_wave1/relocation/no_slow/seed_1001
+2026-04-15T16:29:36.325158+00:00 relocation done mode=no_slow seed=1001
+2026-04-15T16:29:36.328018+00:00 relocation start mode=no_interoception seed=101 root=artifacts/official_wave1/relocation/no_interoception/seed_101
+2026-04-15T16:29:47.190133+00:00 relocation done mode=no_interoception seed=101
+2026-04-15T16:29:47.193121+00:00 relocation start mode=no_interoception seed=202 root=artifacts/official_wave1/relocation/no_interoception/seed_202
+2026-04-15T16:29:58.144812+00:00 relocation done mode=no_interoception seed=202
+2026-04-15T16:29:58.148042+00:00 relocation start mode=no_interoception seed=303 root=artifacts/official_wave1/relocation/no_interoception/seed_303
+2026-04-15T16:30:08.499353+00:00 relocation done mode=no_interoception seed=303
+2026-04-15T16:30:08.502233+00:00 relocation start mode=no_interoception seed=404 root=artifacts/official_wave1/relocation/no_interoception/seed_404
+2026-04-15T16:30:19.425441+00:00 relocation done mode=no_interoception seed=404
+2026-04-15T16:30:19.427929+00:00 relocation start mode=no_interoception seed=505 root=artifacts/official_wave1/relocation/no_interoception/seed_505
+2026-04-15T16:30:30.119754+00:00 relocation done mode=no_interoception seed=505
+2026-04-15T16:30:30.124216+00:00 relocation start mode=no_interoception seed=606 root=artifacts/official_wave1/relocation/no_interoception/seed_606
+2026-04-15T16:30:41.018757+00:00 relocation done mode=no_interoception seed=606
+2026-04-15T16:30:41.021642+00:00 relocation start mode=no_interoception seed=707 root=artifacts/official_wave1/relocation/no_interoception/seed_707
+2026-04-15T16:30:53.328994+00:00 relocation done mode=no_interoception seed=707
+2026-04-15T16:30:53.331595+00:00 relocation start mode=no_interoception seed=808 root=artifacts/official_wave1/relocation/no_interoception/seed_808
+2026-04-15T16:31:07.157532+00:00 relocation done mode=no_interoception seed=808
+2026-04-15T16:31:07.160178+00:00 relocation start mode=no_interoception seed=909 root=artifacts/official_wave1/relocation/no_interoception/seed_909
+2026-04-15T16:31:20.650957+00:00 relocation done mode=no_interoception seed=909
+2026-04-15T16:31:20.653493+00:00 relocation start mode=no_interoception seed=1001 root=artifacts/official_wave1/relocation/no_interoception/seed_1001
+2026-04-15T16:31:32.637525+00:00 relocation done mode=no_interoception seed=1001
+2026-04-15T16:31:34.609173+00:00 packet_review=C:\Users\User\Desktop\GameWeb\homeogrid-mvp-rc3\artifacts\aggregate\official_review.json

@@ -1,0 +1,49 @@
+{
+  "baseline_tag": "mvp-rc3",
+  "baseline_commit": "7ffb5e04a022f7b905b002719dca35ef330e5b90",
+  "created_at_utc": "2026-04-15T15:20:04.114062+00:00",
+  "source_configs": [
+    {
+      "path": "configs/ablation.yaml",
+      "sha256": "d058867e7b1d99d2ccd4d2969c012e5fe615bca807e2d040db8374aeaa548879"
+    },
+    {
+      "path": "configs/rc3_calibration.yaml",
+      "sha256": "2a708ed89596c20ae41c97361d79e2d374298c13d42fa8033efb57f14c62487f"
+    }
+  ],
+  "launch_configs": {
+    "core": {
+      "path": "artifacts/protocols/official-wave1/official_core.yaml",
+      "sha256": "053ace45211623b698cc7a30bce215b85b342b5ee93540c8dc018dca5ee619a2",
+      "train": 200,
+      "eval_seen": 100,
+      "eval_relocation": 0
+    },
+    "relocation": {
+      "path": "artifacts/protocols/official-wave1/official_relocation.yaml",
+      "sha256": "f12a04ff51e74311166778737aa16e0136cf61d9d112430c801d037d7ee43e47",
+      "train": 0,
+      "eval_seen": 0,
+      "eval_relocation": 50,
+      "relocation_step": 45,
+      "relocation_probability": 1.0
+    }
+  },
+  "modes": [
+    "full",
+    "no_fast",
+    "no_slow",
+    "no_interoception"
+  ],
+  "seed_source": {
+    "path": "configs/seeds/official.txt",
+    "sha256": "7db28694b1c16b9cdbb712a3248f5bb29a123c4acc0b6a28b74e32ffac13cc32"
+  },
+  "split_flow": {
+    "phase_a": "core",
+    "phase_b": "relocation",
+    "reuse_rule": "copy slow_memory from corresponding core run into relocation root before runtime build"
+  },
+  "artifacts_root": "artifacts/official_wave1"
+}

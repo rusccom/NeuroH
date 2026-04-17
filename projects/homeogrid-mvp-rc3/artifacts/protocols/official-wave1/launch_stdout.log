@@ -1,0 +1,16 @@
+{
+  "manifest": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\protocols\\official-wave1\\official_wave1_manifest.json",
+  "command_log": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\protocols\\official-wave1\\command_log.txt",
+  "core_config": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\protocols\\official-wave1\\official_core.yaml",
+  "relocation_config": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\protocols\\official-wave1\\official_relocation.yaml",
+  "output_root": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\official_wave1",
+  "packet_paths": {
+    "summary": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_summary.csv",
+    "mode": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_mode_summary.csv",
+    "seed": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_seed_summary.csv",
+    "phase": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_phase_summary.csv",
+    "coverage": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_metric_coverage.csv",
+    "replay": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_replay_cases.csv",
+    "review": "C:\\Users\\User\\Desktop\\GameWeb\\homeogrid-mvp-rc3\\artifacts\\aggregate\\official_review.json"
+  }
+}
