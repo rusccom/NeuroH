@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "homeoorganism"
+version = "0.1.0"
+description = "HomeoOrganism Research Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy==2.2.6",
+    "gymnasium==1.2.3",
+    "PyYAML==6.0.2",
+    "fastapi==0.122.0",
+    "uvicorn==0.34.0",
+    "pydantic==2.11.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",
+    "mypy==1.15.0",
+    "ruff==0.11.8",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+ignore_missing_imports = true
