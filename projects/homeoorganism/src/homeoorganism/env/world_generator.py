@@ -36,8 +36,9 @@ class WorldGenerator:
         )
 
     def _pick_biome(self, rng: np.random.Generator) -> BiomeTemplate:
-        biome_id = rng.choice(list(BiomeId))
-        return BIOME_TEMPLATES[BiomeId(str(biome_id))]
+        biomes = list(BiomeId)
+        biome = biomes[int(rng.integers(0, len(biomes)))]
+        return BIOME_TEMPLATES[biome]
 
     def _build_empty_world(self) -> np.ndarray:
         size = self.env_config.grid_size
