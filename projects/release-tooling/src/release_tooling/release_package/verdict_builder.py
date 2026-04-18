@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from release_tooling.release_package.pathology_flags import full_observation_pathology
 from release_tooling.release_package.request import ReleaseRequest
 
 KEY_METRICS = {
@@ -36,7 +37,7 @@ def build_official_verdict(
         *control_lines(control_checks),
         "",
         "## Known Limitations",
-        *limitation_lines(biome_audit),
+        *limitation_lines(summary_rows, biome_audit),
         "",
         "## Verdict",
         verdict_line(control_checks),
@@ -87,7 +88,16 @@ def control_lines(control_checks: dict[str, bool]) -> list[str]:
     return [f"- `{key}`: `{value}`" for key, value in control_checks.items()]
 
 
-def limitation_lines(biome_audit: dict[str, object]) -> list[str]:
+def limitation_lines(
+    summary_rows: list[dict[str, object]],
+    biome_audit: dict[str, object],
+) -> list[str]:
+    lines = biome_limitation_lines(biome_audit)
+    lines.extend(full_observation_lines(summary_rows))
+    return lines
+
+
+def biome_limitation_lines(biome_audit: dict[str, object]) -> list[str]:
     if not biome_audit["single_biome_only"]:
         return ["- Biome audit found more than one biome in the assembled package."]
     biome_id = biome_audit["single_biome_id"]
@@ -100,6 +110,25 @@ def limitation_lines(biome_audit: dict[str, object]) -> list[str]:
         (
             "- Current effects remain valid as within-biome comparisons. "
             "Biome generalization is not demonstrated here and is scheduled for v2-rc4."
+        ),
+    ]
+
+
+def full_observation_lines(summary_rows: list[dict[str, object]]) -> list[str]:
+    pathology = full_observation_pathology(summary_rows)
+    if pathology is None:
+        return []
+    return [
+        (
+            "- `full_observation` in "
+            f"`{pathology['input_name']}` showed a pathological pattern: "
+            "`steps_to_first_needed_resource_mean` stayed missing across phases, "
+            "`relocation_recovery_success_rate` stayed `0.0`, and relocation survival was worse than `full`."
+        ),
+        (
+            "- Root cause was not investigated inside frozen rc3. Candidate causes include "
+            "metric events not firing when resources are visible from t=0, exploration/visibility interactions, "
+            "or stale belief-map state after relocation. This is scheduled for v2-rc4 alongside `_pick_biome`."
         ),
     ]
 

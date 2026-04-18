@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 
+from release_tooling.release_package.pathology_flags import full_observation_pathology
 from release_tooling.release_package.request import ReleaseRequest
 
 KEY_METRICS = {
@@ -42,7 +43,7 @@ def build_report(
         *comparison_lines(comparisons),
         "",
         "## Discussion",
-        *discussion_lines(biome_audit, control_checks),
+        *discussion_lines(summary_rows, biome_audit, control_checks),
         "",
         "## What Transfers To v2",
         "- Release assembly remains external to experiment code.",
@@ -121,17 +122,25 @@ def comparison_table_row(row: dict[str, object]) -> str:
 
 
 def discussion_lines(
+    summary_rows: list[dict[str, object]],
     biome_audit: dict[str, object],
     control_checks: dict[str, bool],
 ) -> list[str]:
     biome_summary = ", ".join(
         f"`{key}:{value}`" for key, value in biome_audit["total_counts"].items()
     )
-    return [
+    lines = [
         f"- biome audit total: {biome_summary}",
         f"- single biome only: `{biome_audit['single_biome_only']}`",
         f"- control checks: {', '.join(f'`{key}={value}`' for key, value in control_checks.items())}",
     ]
+    pathology = full_observation_pathology(summary_rows)
+    if pathology is not None:
+        lines.append(
+            "- `full_observation` remained pathological in the assembled package: "
+            "missing `steps_to_first_needed_resource_mean`, zero relocation recovery, and lower relocation survival."
+        )
+    return lines
 
 
 def format_value(value: object) -> str:
