@@ -127,6 +127,10 @@ Question: does non-point embodiment change behavior fundamentally? `RC9` is opti
 - Config loader and configuration dataclasses.
 - Freeze and release discipline, including external release assembly.
 
+### Transitional Bootstrap Layers
+
+`analytics/`, `app/`, and `orchestration/` are imported from `rc3` to provide a runnable baseline harness that can execute `v1_baseline_full` as an ablation condition in `v2`. These modules are not part of the frozen `v2` architecture. They are scheduled for rewrite in `RC4` under continuous-life assumptions (see "Rewritten From Scratch" below). Their current presence in `v2` is a bridge, not a commitment.
+
 ### Rewritten From Scratch
 
 - `experiment_orchestrator`, because `v2` is life-centric rather than episode-centric.
