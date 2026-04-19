@@ -5,10 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from time import time
 
-from homeoorganism.v1_baseline.agent.belief_map import BeliefMap
-from homeoorganism.v1_baseline.agent.working_buffer import WorkingBuffer
+from homeoorganism.agent.belief_map import BeliefMap
+from homeoorganism.agent.working_buffer import WorkingBuffer
 from homeoorganism.analytics.metrics import MetricsCollector
-from homeoorganism.v1_baseline.decision.status_translator import StatusTranslator
+from homeoorganism.decision.status_translator import StatusTranslator
 from homeoorganism.domain.enums import ResourceType
 from homeoorganism.monitoring.domain.dto import (
     BeliefMapView,

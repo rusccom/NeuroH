@@ -127,6 +127,20 @@ Question: does non-point embodiment change behavior fundamentally? `RC9` is opti
 - Config loader and configuration dataclasses.
 - Freeze and release discipline, including external release assembly.
 
+### Forked As Independent Evolution Path
+
+`agent/`, `decision/`, `memory/`, and `planning/` are physical copies of
+`v1_baseline/` created inside `v2` so the active architecture can evolve
+without mutating the preserved reference. In `RC4` these modules remain
+bit-for-bit identical to `v1_baseline/` because the spec explicitly says
+the agent architecture is unchanged in this cycle.
+
+Starting in `RC5`, these active modules are allowed to diverge while
+`v1_baseline/` remains immutable. This split makes `v1_baseline_full` a
+real regression ablation rather than a second name for the same code.
+A regression test, `test_v1_baseline_identity.py`, asserts identity in
+`RC4`. Later cycles will update that expectation to require divergence.
+
 ### Transitional Bootstrap Layers
 
 `analytics/`, `app/`, and `orchestration/` are imported from `rc3` to provide a runnable baseline harness that can execute `v1_baseline_full` as an ablation condition in `v2`. These modules are not part of the frozen `v2` architecture. They are scheduled for rewrite in `RC4` under continuous-life assumptions (see "Rewritten From Scratch" below). Their current presence in `v2` is a bridge, not a commitment.

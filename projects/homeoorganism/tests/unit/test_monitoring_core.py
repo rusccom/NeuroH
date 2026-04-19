@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from homeoorganism.v1_baseline.decision.status_translator import StatusTranslator
+from homeoorganism.decision.status_translator import StatusTranslator
 from homeoorganism.monitoring.core.alert_engine import AlertEngine
 from homeoorganism.monitoring.core.frame_ring_buffer import FrameRingBuffer
 from homeoorganism.monitoring.core.replay_loader import ReplayLoader

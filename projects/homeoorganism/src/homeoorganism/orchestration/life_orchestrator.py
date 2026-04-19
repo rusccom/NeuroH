@@ -20,7 +20,7 @@ from homeoorganism.orchestration.life_artifacts import LifeArtifactsWriter
 from homeoorganism.orchestration.life_state_store import LifeRuntime
 from homeoorganism.orchestration.run_report import RunReport
 from homeoorganism.orchestration.run_state_store import RunStateStore
-from homeoorganism.v1_baseline.agent.core import AgentCore
+from homeoorganism.agent.core import AgentCore
 
 
 @dataclass

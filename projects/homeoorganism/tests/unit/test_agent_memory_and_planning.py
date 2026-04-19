@@ -1,13 +1,13 @@
 import numpy as np
 
-from homeoorganism.v1_baseline.agent.core import AgentCore
-from homeoorganism.v1_baseline.agent.belief_map import BeliefMap
+from homeoorganism.agent.core import AgentCore
+from homeoorganism.agent.belief_map import BeliefMap
 from homeoorganism.analytics.metrics import MetricsCollector
-from homeoorganism.v1_baseline.decision.arbiter import Arbiter
-from homeoorganism.v1_baseline.decision.biome_inferer import BiomeInferer
-from homeoorganism.v1_baseline.decision.drive_model import DriveModel
-from homeoorganism.v1_baseline.decision.event_detector import EventDetector
-from homeoorganism.v1_baseline.decision.explorer_policy import ExplorerPolicy
+from homeoorganism.decision.arbiter import Arbiter
+from homeoorganism.decision.biome_inferer import BiomeInferer
+from homeoorganism.decision.drive_model import DriveModel
+from homeoorganism.decision.event_detector import EventDetector
+from homeoorganism.decision.explorer_policy import ExplorerPolicy
 from homeoorganism.domain.enums import ActionType, CellType, Direction, EventType, ExecutionMode, ResourceType, TargetSource
 from homeoorganism.domain.types import (
     BodyState,
@@ -22,11 +22,11 @@ from homeoorganism.domain.types import (
     Transition,
     Vec2,
 )
-from homeoorganism.v1_baseline.memory.fast_memory import FastMemory
-from homeoorganism.v1_baseline.memory.replay_manager import ReplayManager
-from homeoorganism.v1_baseline.memory.slow_memory import SlowMemory
-from homeoorganism.v1_baseline.planning.controller import LowLevelController
-from homeoorganism.v1_baseline.planning.planner import Planner
+from homeoorganism.memory.fast_memory import FastMemory
+from homeoorganism.memory.replay_manager import ReplayManager
+from homeoorganism.memory.slow_memory import SlowMemory
+from homeoorganism.planning.controller import LowLevelController
+from homeoorganism.planning.planner import Planner
 
 
 def _obs(step=0):

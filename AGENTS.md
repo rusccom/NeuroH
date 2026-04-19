@@ -211,6 +211,58 @@ Avoid:
 - using new folder copies for minor versioning
 - making undocumented assumptions from local runs
 
+## Current RC4 State
+
+Active cycle: `RC4 - long-life ecology`
+Spec: `projects/homeoorganism/docs/rc4_spec.md` (frozen)
+Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + fork commit in progress.
+Remaining branches: Branch 5 (configs/CLI wiring), Branch 6 (monitoring).
+
+After branches 5 and 6:
+1. Smoke test all 4 ablation modes
+2. Pilot wave on pilot_rc4.txt seeds (5 seeds x 5 lives x 4 modes)
+3. Pilot review and pilot freeze tag
+4. Official wave on official_rc4.txt seeds (10 seeds x 20 lives x 4 modes)
+5. Release package assembly via projects/release-tooling/
+6. rc4_verdict.md
+7. Tag v2-rc4-closed
+
+### Key Invariants
+
+- `projects/homeogrid-mvp-rc3/` is frozen. Never modified.
+- `src/homeoorganism/v1_baseline/` is immutable reference. Never modified.
+- `src/homeoorganism/agent/`, `decision/`, `memory/`, `planning/` are v2 active.
+  In `RC4` they remain bit-for-bit identical to `v1_baseline/`, verified by
+  `test_v1_baseline_identity.py`.
+- `src/homeoorganism/analytics/metrics.py` is not modified. It preserves
+  episodic_full calibration against rc3.
+- `src/homeoorganism/orchestration/experiment_orchestrator.py` is not modified.
+  It remains the episodic_full path only.
+- No new agent code without a committed RC spec.
+- No spec changes without an explicit spec-change commit.
+
+### Four Ablation Modes
+
+- `continuous_full`: v2 active agent + ecology regen + periodic relocation + slow memory carryover
+- `continuous_no_regen`: v2 active agent + no regen + periodic relocation + slow memory carryover
+- `episodic_full`: v2 active agent + rc3 episodic env for rc3 calibration
+- `v1_baseline_full`: v1_baseline agent + ecology regen + periodic relocation + slow memory carryover
+
+### Decision Anchors
+
+- Decision A: slow memory carryover is on between lives within a run
+- Decision B: life ends on depletion or max_ticks=5000
+- Decision C: periodic relocation every 1000 ticks at p=0.5 in continuous modes
+
+### Reading Order For A Fresh Chat
+
+1. This file (`AGENTS.md`)
+2. `projects/homeoorganism/docs/vision.md`
+3. `projects/homeoorganism/docs/rc4_spec.md`
+4. `projects/homeoorganism/docs/decisions/`
+5. `git log --oneline -15`
+6. `projects/homeoorganism/tests/`
+
 ## New Chat Startup Checklist
 
 At the start of a new chat in this repo:

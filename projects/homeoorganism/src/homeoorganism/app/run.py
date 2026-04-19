@@ -10,23 +10,23 @@ from threading import Thread
 import uvicorn
 
 from homeoorganism.app.runtime_settings import RuntimeSettings
-from homeoorganism.v1_baseline.agent.belief_map import BeliefMap
-from homeoorganism.v1_baseline.agent.core import AgentCore
-from homeoorganism.v1_baseline.agent.working_buffer import WorkingBuffer
+from homeoorganism.agent.belief_map import BeliefMap
+from homeoorganism.agent.core import AgentCore
+from homeoorganism.agent.working_buffer import WorkingBuffer
 from homeoorganism.analytics.metrics import MetricsCollector
 from homeoorganism.analytics.report_writer import ReportWriter
 from homeoorganism.analytics.windowed_metrics import ContinuousMetrics
 from homeoorganism.config.loader import ConfigBundle, load_config
-from homeoorganism.v1_baseline.decision.arbiter import Arbiter
-from homeoorganism.v1_baseline.decision.biome_inferer import BiomeInferer
-from homeoorganism.v1_baseline.decision.drive_model import DriveModel
-from homeoorganism.v1_baseline.decision.event_detector import EventDetector
-from homeoorganism.v1_baseline.decision.explorer_policy import ExplorerPolicy
-from homeoorganism.v1_baseline.decision.status_translator import StatusTranslator
+from homeoorganism.decision.arbiter import Arbiter
+from homeoorganism.decision.biome_inferer import BiomeInferer
+from homeoorganism.decision.drive_model import DriveModel
+from homeoorganism.decision.event_detector import EventDetector
+from homeoorganism.decision.explorer_policy import ExplorerPolicy
+from homeoorganism.decision.status_translator import StatusTranslator
 from homeoorganism.env.gym_env import HomeoGridEnv
-from homeoorganism.v1_baseline.memory.fast_memory import FastMemory
-from homeoorganism.v1_baseline.memory.replay_manager import ReplayManager
-from homeoorganism.v1_baseline.memory.slow_memory import SlowMemory
+from homeoorganism.memory.fast_memory import FastMemory
+from homeoorganism.memory.replay_manager import ReplayManager
+from homeoorganism.memory.slow_memory import SlowMemory
 from homeoorganism.monitoring.core.alert_engine import AlertEngine
 from homeoorganism.monitoring.core.frame_ring_buffer import FrameRingBuffer
 from homeoorganism.monitoring.core.monitoring_facade import MonitoringFacade
@@ -42,8 +42,22 @@ from homeoorganism.orchestration.life_orchestrator import LifeOrchestrator
 from homeoorganism.orchestration.experiment_orchestrator import ExperimentOrchestrator
 from homeoorganism.orchestration.run_artifacts import RunArtifacts
 from homeoorganism.orchestration.run_state_store import RunStateStore
-from homeoorganism.v1_baseline.planning.controller import LowLevelController
-from homeoorganism.v1_baseline.planning.planner import Planner
+from homeoorganism.planning.controller import LowLevelController
+from homeoorganism.planning.planner import Planner
+from homeoorganism.v1_baseline.agent.belief_map import BeliefMap as V1BaselineBeliefMap
+from homeoorganism.v1_baseline.agent.core import AgentCore as V1BaselineAgentCore
+from homeoorganism.v1_baseline.agent.working_buffer import WorkingBuffer as V1BaselineWorkingBuffer
+from homeoorganism.v1_baseline.decision.arbiter import Arbiter as V1BaselineArbiter
+from homeoorganism.v1_baseline.decision.biome_inferer import BiomeInferer as V1BaselineBiomeInferer
+from homeoorganism.v1_baseline.decision.drive_model import DriveModel as V1BaselineDriveModel
+from homeoorganism.v1_baseline.decision.event_detector import EventDetector as V1BaselineEventDetector
+from homeoorganism.v1_baseline.decision.explorer_policy import ExplorerPolicy as V1BaselineExplorerPolicy
+from homeoorganism.v1_baseline.decision.status_translator import StatusTranslator as V1BaselineStatusTranslator
+from homeoorganism.v1_baseline.memory.fast_memory import FastMemory as V1BaselineFastMemory
+from homeoorganism.v1_baseline.memory.replay_manager import ReplayManager as V1BaselineReplayManager
+from homeoorganism.v1_baseline.memory.slow_memory import SlowMemory as V1BaselineSlowMemory
+from homeoorganism.v1_baseline.planning.controller import LowLevelController as V1BaselineLowLevelController
+from homeoorganism.v1_baseline.planning.planner import Planner as V1BaselinePlanner
 
 
 @dataclass
@@ -134,8 +148,10 @@ def _run_full_suite(orchestrator: ExperimentOrchestrator, run_ablations: bool) -
     orchestrator.monitoring.recorder.close()
 
 
-def _build_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
-    return AgentCore(
+def _build_active_agent(config, slow_memory) -> tuple[AgentCore, BeliefMap, WorkingBuffer]:
+    belief_map = BeliefMap(config.env.grid_size)
+    working_buffer = WorkingBuffer()
+    agent = AgentCore(
         drive_model=DriveModel(),
         belief_map=belief_map,
         biome_inferer=BiomeInferer(),
@@ -149,14 +165,30 @@ def _build_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
         event_detector=EventDetector(),
         replay_manager=ReplayManager(),
     )
+    return agent, belief_map, working_buffer
 
 
-def _build_active_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
-    return _build_agent(config, belief_map, working_buffer, slow_memory)
-
-
-def _build_v1_baseline_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
-    return _build_agent(config, belief_map, working_buffer, slow_memory)
+def _build_v1_baseline_agent(
+    config,
+    slow_memory,
+) -> tuple[V1BaselineAgentCore, V1BaselineBeliefMap, V1BaselineWorkingBuffer]:
+    belief_map = V1BaselineBeliefMap(config.env.grid_size)
+    working_buffer = V1BaselineWorkingBuffer()
+    agent = V1BaselineAgentCore(
+        drive_model=V1BaselineDriveModel(),
+        belief_map=belief_map,
+        biome_inferer=V1BaselineBiomeInferer(),
+        working_buffer=working_buffer,
+        fast_memory=V1BaselineFastMemory(config.memory),
+        slow_memory=slow_memory,
+        arbiter=V1BaselineArbiter(config.memory),
+        explorer=V1BaselineExplorerPolicy(),
+        planner=V1BaselinePlanner(config.planner),
+        controller=V1BaselineLowLevelController(),
+        event_detector=V1BaselineEventDetector(),
+        replay_manager=V1BaselineReplayManager(),
+    )
+    return agent, belief_map, working_buffer
 
 
 def _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_state_store, translator):
@@ -170,7 +202,7 @@ def _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_sta
     )
 
 
-def _build_monitoring(config, translator, run_state_store, artifacts: RunArtifacts) -> MonitoringFacade:
+def _build_monitoring(config, translator, run_state_store, artifacts) -> MonitoringFacade:
     return MonitoringFacade(
         frame_buffer=FrameRingBuffer(config.monitor.frame_buffer_size),
         alert_engine=AlertEngine(translator),
@@ -226,22 +258,31 @@ def _build_orchestrator(mode: str, config, components, artifacts):
 
 
 def _runtime_components(config, artifacts, mode: str, load_saved_memory: bool):
-    belief_map = BeliefMap(config.env.grid_size)
-    working_buffer = WorkingBuffer()
     metrics = MetricsCollector() if mode == "episodic_full" else ContinuousMetrics()
-    translator = StatusTranslator()
     run_state_store = RunStateStore()
     command_bus = CommandBus()
     env = HomeoGridEnv(config.env, config.body, config.reward, config.ecology)
-    slow_memory = SlowMemory(config.memory, config.config_hash)
+    translator = StatusTranslator() if mode != "v1_baseline_full" else V1BaselineStatusTranslator()
+    if mode == "v1_baseline_full":
+        slow_memory = V1BaselineSlowMemory(config.memory, config.config_hash)
+        agent, belief_map, working_buffer = _build_v1_baseline_agent(config, slow_memory)
+    else:
+        slow_memory = SlowMemory(config.memory, config.config_hash)
+        agent, belief_map, working_buffer = _build_active_agent(config, slow_memory)
     if load_saved_memory:
         slow_memory.load(str(artifacts.slow_memory_path))
     snapshot_builder = None
     if mode == "episodic_full":
-        snapshot_builder = _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_state_store, translator)
-    builder = _build_v1_baseline_agent if mode == "v1_baseline_full" else _build_active_agent
+        snapshot_builder = _build_snapshot_builder(
+            config,
+            belief_map,
+            working_buffer,
+            metrics,
+            run_state_store,
+            translator,
+        )
     return {
-        "agent": builder(config, belief_map, working_buffer, slow_memory),
+        "agent": agent,
         "command_bus": command_bus,
         "env": env,
         "metrics": metrics,

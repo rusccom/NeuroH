@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass, field
 
-from homeoorganism.v1_baseline.decision.status_translator import StatusTranslator
+from homeoorganism.decision.status_translator import StatusTranslator
 from homeoorganism.monitoring.domain.dto import OperatorEvent, StepSnapshot
 from homeoorganism.monitoring.domain.enums import AlertLevel
 
