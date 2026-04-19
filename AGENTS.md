@@ -30,7 +30,7 @@ The practical workflow is:
 - `projects/neuroh/` - active development line of the current live project
 - `projects/homeogrid-mvp-rc3/` - frozen baseline snapshot from `mvp-rc3`
 - `projects/release-tooling/` - external read-only release assembler
-- `projects/homeoorganism/` - future v2 project folder when started
+- `projects/homeoorganism/` - active v2 project; vision frozen, RC4 in planning
 - `release-packages/` - ignored output folder for generated release bundles
 
 If a new chat starts, inspect this file first, then inspect:
@@ -230,4 +230,4 @@ If the user says "the project" without clarification:
 - frozen baseline means `projects/homeogrid-mvp-rc3/`
 - release assembly means `projects/release-tooling/`
 
-If the user asks for v2 work and `projects/homeoorganism/` does not exist yet, create it only as a new independent project folder, not as a mutation of rc3.
+V2 work happens in `projects/homeoorganism/`. Vision is frozen in `docs/vision.md` and should not be modified without explicit reason. `RC4` implementation requires `docs/rc4_spec.md` to be committed first. Do not write new agent code until `rc4_spec.md` is committed.
