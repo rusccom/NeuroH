@@ -16,6 +16,7 @@ from homeoorganism.config.experiment_config import ExperimentConfig
 from homeoorganism.config.memory_config import MemoryConfig
 from homeoorganism.config.monitor_config import MonitorConfig
 from homeoorganism.config.planner_config import PlannerConfig
+from homeoorganism.config.relocation_mode import RelocationMode
 from homeoorganism.config.reward_config import RewardConfig
 
 
@@ -38,7 +39,7 @@ def load_config(path: str | Path) -> ConfigBundle:
     data = yaml.safe_load(raw_text) or {}
     return ConfigBundle(
         experiment=_build_experiment(data),
-        env=EnvConfig(**data.get("env", {})),
+        env=_build_env(data),
         ecology=EcologyConfig(**data.get("ecology", {})),
         body=BodyConfig(**data.get("body", {})),
         reward=RewardConfig(**data.get("reward", {})),
@@ -67,6 +68,14 @@ def _build_experiment(data: dict[str, Any]) -> ExperimentConfig:
     if "ablation_modes" in fields:
         fields["ablation_modes"] = tuple(fields["ablation_modes"])
     return ExperimentConfig(**fields)
+
+
+def _build_env(data: dict[str, Any]) -> EnvConfig:
+    fields = dict(data.get("env", {}))
+    raw_mode = fields.get("relocation_mode")
+    if raw_mode is not None:
+        fields["relocation_mode"] = RelocationMode(raw_mode)
+    return EnvConfig(**fields)
 
 
 def _hash_text(raw_text: str) -> str:

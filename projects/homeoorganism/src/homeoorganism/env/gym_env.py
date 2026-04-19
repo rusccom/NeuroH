@@ -2,22 +2,24 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 import gymnasium as gym
 import numpy as np
 
 from homeoorganism.config.body_config import BodyConfig
+from homeoorganism.config.ecology_config import EcologyConfig
 from homeoorganism.config.env_config import EnvConfig
+from homeoorganism.config.relocation_mode import RelocationMode
 from homeoorganism.config.reward_config import RewardConfig
-from homeoorganism.domain.enums import ActionType, CellType
-from homeoorganism.domain.types import Observation, StepInfo, Vec2
-from homeoorganism.env.biome_templates import BIOME_TEMPLATES
+from homeoorganism.domain.enums import ActionType
+from homeoorganism.domain.types import Observation, StepInfo
+from homeoorganism.env.ecology import EcologyLayer, move_one_resource
 from homeoorganism.env.observation_encoder import ObservationEncoder
 from homeoorganism.env.physiology import PhysiologyModel
 from homeoorganism.env.reward_model import RewardModel
 from homeoorganism.env.world_generator import WorldGenerator
-from homeoorganism.env.world_state import GridWorldState, LANDMARK_POS, clone_tiles, find_cells, set_cell
+from homeoorganism.env.world_state import GridWorldState, clone_tiles
 
 
 @dataclass
@@ -25,6 +27,7 @@ class HomeoGridEnv(gym.Env):
     env_config: EnvConfig
     body_config: BodyConfig
     reward_config: RewardConfig
+    ecology_config: EcologyConfig = field(default_factory=EcologyConfig)
 
     metadata = {"render_modes": ["rgb_array"], "render_fps": 5}
 
@@ -45,11 +48,14 @@ class HomeoGridEnv(gym.Env):
         )
         self.state: GridWorldState | None = None
         self._rng = np.random.default_rng()
+        self.ecology = EcologyLayer(self.ecology_config, self._rng)
         self._relocation_done = False
 
     def reset(self, seed: int | None = None, options=None) -> tuple[Observation, dict]:
         super().reset(seed=seed)
         self._rng = np.random.default_rng(seed)
+        self.ecology = EcologyLayer(self.ecology_config, self._rng)
+        self.ecology.reset()
         self._relocation_done = False
         self.state = self.generator.generate(seed)
         return self.encoder.encode(self.state), {"biome_id": self.state.biome_id.value}
@@ -57,7 +63,8 @@ class HomeoGridEnv(gym.Env):
     def step(self, action: ActionType) -> tuple[Observation, float, bool, bool, StepInfo]:
         assert self.state is not None
         state, info = self.physiology.apply(self.state, ActionType(int(action)))
-        state, info = self._maybe_relocate(state, info)
+        state, info = self._apply_ecology(state, info)
+        state, info = self._maybe_fixed_relocate(state, info)
         reward = self.reward_model.compute(state.body, info)
         self.state = state
         terminated = info.death_reason is not None
@@ -68,56 +75,41 @@ class HomeoGridEnv(gym.Env):
         assert self.state is not None
         return np.array(self.state.tiles, copy=True)
 
-    def _maybe_relocate(
+    def _apply_ecology(
         self,
         state: GridWorldState,
         info: StepInfo,
     ) -> tuple[GridWorldState, StepInfo]:
-        if not self.env_config.enable_relocation:
+        next_state, relocated = self.ecology.apply(state, self.env_config.ecology_enabled, self._continuous_mode())
+        if not relocated:
+            return next_state, info
+        return next_state, replace(info, resource_relocated=True)
+
+    def _maybe_fixed_relocate(
+        self,
+        state: GridWorldState,
+        info: StepInfo,
+    ) -> tuple[GridWorldState, StepInfo]:
+        if not self._fixed_relocation_enabled():
             return state, info
         if self._relocation_done or state.step_idx != self.env_config.relocation_step:
             return state, info
-        if self._rng.random() > self.env_config.relocation_probability:
+        if self._rng.random() >= self.env_config.relocation_probability:
             return state, info
         self._relocation_done = True
         tiles = clone_tiles(state.tiles)
-        moved = self._move_one_resource(tiles)
+        moved = move_one_resource(tiles, state.biome_id, self._rng)
         if not moved:
             return state, info
         next_state = replace(state, tiles=tiles)
         return next_state, replace(info, resource_relocated=True)
 
-    def _move_one_resource(self, tiles: np.ndarray) -> bool:
-        resources = find_cells(tiles, CellType.FOOD) + find_cells(tiles, CellType.WATER)
-        if not resources:
-            return False
-        source = resources[int(self._rng.integers(0, len(resources)))]
-        cell = CellType(int(tiles[source.y, source.x]))
-        biome_id = self.state.biome_id if self.state else next(iter(BIOME_TEMPLATES))
-        target = self._sample_new_position(tiles, cell, biome_id)
-        if target is None:
-            return False
-        set_cell(tiles, source, CellType.EMPTY)
-        set_cell(tiles, target, cell)
-        return True
+    def _continuous_mode(self) -> RelocationMode:
+        if not self.env_config.enable_relocation:
+            return RelocationMode.DISABLED
+        return self.env_config.relocation_mode
 
-    def _sample_new_position(
-        self,
-        tiles: np.ndarray,
-        cell: CellType,
-        biome_id,
-    ) -> Vec2 | None:
-        template = BIOME_TEMPLATES[biome_id]
-        center = template.food_center if cell == CellType.FOOD else template.water_center
-        candidates = [
-            Vec2(center.x + dx, center.y + dy)
-            for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (0, 0))
-        ]
-        self._rng.shuffle(candidates)
-        for pos in candidates:
-            if pos in {LANDMARK_POS, Vec2(5, 6)}:
-                continue
-            if tiles[pos.y, pos.x] != int(CellType.EMPTY):
-                continue
-            return pos
-        return None
+    def _fixed_relocation_enabled(self) -> bool:
+        if not self.env_config.enable_relocation:
+            return False
+        return self.env_config.relocation_mode == RelocationMode.EPISODIC_FIXED

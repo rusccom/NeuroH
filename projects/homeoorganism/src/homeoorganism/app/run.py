@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
+from enum import Enum
 from pathlib import Path
 from threading import Thread
 
@@ -195,7 +196,7 @@ def _runtime_components(config, artifacts: RunArtifacts):
     translator = StatusTranslator()
     run_state_store = RunStateStore()
     command_bus = CommandBus()
-    env = HomeoGridEnv(config.env, config.body, config.reward)
+    env = HomeoGridEnv(config.env, config.body, config.reward, config.ecology)
     slow_memory = SlowMemory(config.memory, config.config_hash)
     slow_memory.load(str(artifacts.slow_memory_path))
     return {
@@ -233,6 +234,8 @@ def _runtime_manifest(config: ConfigBundle, config_path: str, artifacts: RunArti
 def _yaml_ready(value):
     if isinstance(value, dict):
         return {key: _yaml_ready(item) for key, item in value.items()}
+    if isinstance(value, Enum):
+        return value.value
     if isinstance(value, tuple):
         return [_yaml_ready(item) for item in value]
     if isinstance(value, list):
