@@ -10,6 +10,7 @@ from typing import Any
 import yaml
 
 from homeoorganism.config.body_config import BodyConfig
+from homeoorganism.config.ecology_config import EcologyConfig
 from homeoorganism.config.env_config import EnvConfig
 from homeoorganism.config.experiment_config import ExperimentConfig
 from homeoorganism.config.memory_config import MemoryConfig
@@ -22,6 +23,7 @@ from homeoorganism.config.reward_config import RewardConfig
 class ConfigBundle:
     experiment: ExperimentConfig
     env: EnvConfig
+    ecology: EcologyConfig
     body: BodyConfig
     reward: RewardConfig
     memory: MemoryConfig
@@ -37,6 +39,7 @@ def load_config(path: str | Path) -> ConfigBundle:
     return ConfigBundle(
         experiment=_build_experiment(data),
         env=EnvConfig(**data.get("env", {})),
+        ecology=EcologyConfig(**data.get("ecology", {})),
         body=BodyConfig(**data.get("body", {})),
         reward=RewardConfig(**data.get("reward", {})),
         memory=MemoryConfig(**data.get("memory", {})),
@@ -53,6 +56,7 @@ def _build_experiment(data: dict[str, Any]) -> ExperimentConfig:
         if key
         not in {
             "env",
+            "ecology",
             "body",
             "reward",
             "memory",
