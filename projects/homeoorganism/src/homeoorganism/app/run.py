@@ -15,6 +15,7 @@ from homeoorganism.v1_baseline.agent.core import AgentCore
 from homeoorganism.v1_baseline.agent.working_buffer import WorkingBuffer
 from homeoorganism.analytics.metrics import MetricsCollector
 from homeoorganism.analytics.report_writer import ReportWriter
+from homeoorganism.analytics.windowed_metrics import ContinuousMetrics
 from homeoorganism.config.loader import ConfigBundle, load_config
 from homeoorganism.v1_baseline.decision.arbiter import Arbiter
 from homeoorganism.v1_baseline.decision.biome_inferer import BiomeInferer
@@ -36,6 +37,8 @@ from homeoorganism.monitoring.core.stream_hub import StreamHub
 from homeoorganism.monitoring.domain.enums import OperatorCommandType, RunState
 from homeoorganism.monitoring.web.api import create_monitor_app
 from homeoorganism.orchestration.command_bus import CommandBus
+from homeoorganism.orchestration.life_artifacts import LifeArtifactsWriter
+from homeoorganism.orchestration.life_orchestrator import LifeOrchestrator
 from homeoorganism.orchestration.experiment_orchestrator import ExperimentOrchestrator
 from homeoorganism.orchestration.run_artifacts import RunArtifacts
 from homeoorganism.orchestration.run_state_store import RunStateStore
@@ -46,17 +49,17 @@ from homeoorganism.v1_baseline.planning.planner import Planner
 @dataclass
 class Runtime:
     config: ConfigBundle
-    orchestrator: ExperimentOrchestrator
+    orchestrator: ExperimentOrchestrator | LifeOrchestrator
     monitoring: MonitoringFacade
     control_port: "ControlPort"
-    artifacts: RunArtifacts
+    artifacts: RunArtifacts | LifeArtifactsWriter
 
 
 @dataclass
 class ControlPort:
     command_bus: CommandBus
     run_state_store: RunStateStore
-    orchestrator: ExperimentOrchestrator
+    orchestrator: ExperimentOrchestrator | LifeOrchestrator
 
     def get_run_state(self) -> str:
         return self.run_state_store.get_run_state().value
@@ -86,26 +89,20 @@ class ControlPort:
         return accepted
 
 
-def build_runtime(config_path: str, settings: RuntimeSettings | None = None) -> Runtime:
+def build_runtime(
+    config_path: str,
+    settings: RuntimeSettings | None = None,
+    mode: str = "episodic_full",
+) -> Runtime:
     runtime_settings = settings or RuntimeSettings()
     config = _apply_runtime_settings(load_config(config_path), runtime_settings)
-    artifacts = RunArtifacts(Path(runtime_settings.artifacts_root), config.experiment.run_id)
+    artifacts = _build_artifacts(mode, Path(runtime_settings.artifacts_root), config.experiment.run_id)
     artifacts.setup(runtime_settings.clean_artifacts)
     artifacts.write_yaml(artifacts.config_snapshot_path, _yaml_ready(asdict(config)))
-    artifacts.write_json(artifacts.manifest_path, _runtime_manifest(config, config_path, artifacts))
-    components = _runtime_components(config, artifacts)
-    orchestrator = ExperimentOrchestrator(
-        env=components["env"],
-        agent=components["agent"],
-        metrics=components["metrics"],
-        monitoring=components["monitoring"],
-        snapshot_builder=components["snapshot_builder"],
-        report_writer=ReportWriter(str(artifacts.root_dir)),
-        command_bus=components["command_bus"],
-        run_state_store=components["run_state_store"],
-        experiment_config=config.experiment,
-        artifacts=artifacts,
-    )
+    components = _runtime_components(config, artifacts, mode, mode == "episodic_full")
+    orchestrator = _build_orchestrator(mode, config, components, artifacts)
+    if mode == "episodic_full":
+        artifacts.write_json(artifacts.manifest_path, _runtime_manifest(config, config_path, artifacts))
     control_port = ControlPort(components["command_bus"], components["run_state_store"], orchestrator)
     return Runtime(config, orchestrator, components["monitoring"], control_port, artifacts)
 
@@ -154,6 +151,14 @@ def _build_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
     )
 
 
+def _build_active_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
+    return _build_agent(config, belief_map, working_buffer, slow_memory)
+
+
+def _build_v1_baseline_agent(config, belief_map, working_buffer, slow_memory) -> AgentCore:
+    return _build_agent(config, belief_map, working_buffer, slow_memory)
+
+
 def _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_state_store, translator):
     return SnapshotBuilder(
         belief_map=belief_map,
@@ -189,24 +194,60 @@ def _run_without_server(runtime: Runtime) -> None:
     runtime.monitoring.recorder.close()
 
 
-def _runtime_components(config, artifacts: RunArtifacts):
+def _build_artifacts(mode: str, root_dir: Path, run_id: str):
+    if mode == "episodic_full":
+        return RunArtifacts(root_dir, run_id)
+    return LifeArtifactsWriter(root_dir, run_id)
+
+
+def _build_orchestrator(mode: str, config, components, artifacts):
+    if mode == "episodic_full":
+        return ExperimentOrchestrator(
+            env=components["env"],
+            agent=components["agent"],
+            metrics=components["metrics"],
+            monitoring=components["monitoring"],
+            snapshot_builder=components["snapshot_builder"],
+            report_writer=ReportWriter(str(artifacts.root_dir)),
+            command_bus=components["command_bus"],
+            run_state_store=components["run_state_store"],
+            experiment_config=config.experiment,
+            artifacts=artifacts,
+        )
+    return LifeOrchestrator(
+        env=components["env"],
+        agent=components["agent"],
+        metrics=components["metrics"],
+        artifacts=artifacts,
+        experiment_config=config.experiment,
+        config_hash=config.config_hash,
+        run_state_store=components["run_state_store"],
+    )
+
+
+def _runtime_components(config, artifacts, mode: str, load_saved_memory: bool):
     belief_map = BeliefMap(config.env.grid_size)
     working_buffer = WorkingBuffer()
-    metrics = MetricsCollector()
+    metrics = MetricsCollector() if mode == "episodic_full" else ContinuousMetrics()
     translator = StatusTranslator()
     run_state_store = RunStateStore()
     command_bus = CommandBus()
     env = HomeoGridEnv(config.env, config.body, config.reward, config.ecology)
     slow_memory = SlowMemory(config.memory, config.config_hash)
-    slow_memory.load(str(artifacts.slow_memory_path))
+    if load_saved_memory:
+        slow_memory.load(str(artifacts.slow_memory_path))
+    snapshot_builder = None
+    if mode == "episodic_full":
+        snapshot_builder = _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_state_store, translator)
+    builder = _build_v1_baseline_agent if mode == "v1_baseline_full" else _build_active_agent
     return {
-        "agent": _build_agent(config, belief_map, working_buffer, slow_memory),
+        "agent": builder(config, belief_map, working_buffer, slow_memory),
         "command_bus": command_bus,
         "env": env,
         "metrics": metrics,
         "monitoring": _build_monitoring(config, translator, run_state_store, artifacts),
         "run_state_store": run_state_store,
-        "snapshot_builder": _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_state_store, translator),
+        "snapshot_builder": snapshot_builder,
     }
 
 
