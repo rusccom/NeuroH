@@ -10,6 +10,9 @@ class ExperimentConfig:
     train_episodes: int = 200
     eval_episodes_seen: int = 100
     eval_episodes_relocation: int = 50
+    mode: str = "episodic_full"
+    lives_per_seed: int = 5
+    life_max_ticks: int = 5000
     enable_monitoring: bool = True
     save_monitor_stream: bool = True
     save_metrics: bool = True

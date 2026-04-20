@@ -7,6 +7,9 @@ from statistics import fmean, median, pstdev
 
 
 SUMMARY_METRICS = (
+    "life_duration_ticks",
+    "mode_transition_coherence",
+    "mode_diversity",
     "steps_to_first_needed_resource",
     "return_steps_to_seen_resource",
     "survival_steps",

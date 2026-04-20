@@ -106,16 +106,17 @@ class ControlPort:
 def build_runtime(
     config_path: str,
     settings: RuntimeSettings | None = None,
-    mode: str = "episodic_full",
+    mode: str | None = None,
 ) -> Runtime:
     runtime_settings = settings or RuntimeSettings()
     config = _apply_runtime_settings(load_config(config_path), runtime_settings)
-    artifacts = _build_artifacts(mode, Path(runtime_settings.artifacts_root), config.experiment.run_id)
+    resolved_mode = config.experiment.mode if mode is None else mode
+    artifacts = _build_artifacts(resolved_mode, Path(runtime_settings.artifacts_root), config.experiment.run_id)
     artifacts.setup(runtime_settings.clean_artifacts)
     artifacts.write_yaml(artifacts.config_snapshot_path, _yaml_ready(asdict(config)))
-    components = _runtime_components(config, artifacts, mode, mode == "episodic_full")
-    orchestrator = _build_orchestrator(mode, config, components, artifacts)
-    if mode == "episodic_full":
+    components = _runtime_components(config, artifacts, resolved_mode, resolved_mode == "episodic_full")
+    orchestrator = _build_orchestrator(resolved_mode, config, components, artifacts)
+    if resolved_mode == "episodic_full":
         artifacts.write_json(artifacts.manifest_path, _runtime_manifest(config, config_path, artifacts))
     control_port = ControlPort(components["command_bus"], components["run_state_store"], orchestrator)
     return Runtime(config, orchestrator, components["monitoring"], control_port, artifacts)
@@ -132,7 +133,7 @@ def run_runtime(config_path: str, mode: str) -> None:
         runtime.control_port,
         str(Path(__file__).resolve().parent.parent / "monitoring" / "web" / "static"),
     )
-    worker = Thread(target=_run_full_suite, args=(runtime.orchestrator, runtime.config.experiment.run_ablations))
+    worker = Thread(target=_run_runtime_suite, args=(runtime,))
     worker.daemon = True
     worker.start()
     uvicorn.run(app, host=runtime.config.monitor.bind_host, port=runtime.config.monitor.bind_port)
@@ -141,11 +142,21 @@ def run_runtime(config_path: str, mode: str) -> None:
 def _run_full_suite(orchestrator: ExperimentOrchestrator, run_ablations: bool) -> None:
     orchestrator.run_protocol("full")
     if not run_ablations:
-        orchestrator.monitoring.recorder.close()
         return
     for mode in ("full", "no_fast", "no_slow", "no_interoception", "no_rough_cost", "full_observation"):
         orchestrator.run_ablation(mode)
-    orchestrator.monitoring.recorder.close()
+
+
+def _run_runtime_suite(runtime: Runtime) -> None:
+    if isinstance(runtime.orchestrator, LifeOrchestrator):
+        runtime.orchestrator.run(
+            runtime.config.experiment.mode,
+            runtime.config.experiment.lives_per_seed,
+            runtime.config.experiment.life_max_ticks,
+        )
+    else:
+        _run_full_suite(runtime.orchestrator, runtime.config.experiment.run_ablations)
+    runtime.monitoring.recorder.close()
 
 
 def _build_active_agent(config, slow_memory) -> tuple[AgentCore, BeliefMap, WorkingBuffer]:
@@ -215,6 +226,8 @@ def _build_monitoring(config, translator, run_state_store, artifacts) -> Monitor
 
 
 def _run_ablation_only(runtime: Runtime) -> None:
+    if not isinstance(runtime.orchestrator, ExperimentOrchestrator):
+        raise ValueError("Ablation mode is only supported for episodic runtimes.")
     for ablation in runtime.config.experiment.ablation_modes:
         runtime.orchestrator.run_ablation(ablation)
     runtime.orchestrator.report_writer.write_ablations(runtime.orchestrator._ablation_rows)
@@ -222,8 +235,7 @@ def _run_ablation_only(runtime: Runtime) -> None:
 
 
 def _run_without_server(runtime: Runtime) -> None:
-    _run_full_suite(runtime.orchestrator, runtime.config.experiment.run_ablations)
-    runtime.monitoring.recorder.close()
+    _run_runtime_suite(runtime)
 
 
 def _build_artifacts(mode: str, root_dir: Path, run_id: str):

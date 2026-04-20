@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from homeoorganism.app.run import build_runtime
 from homeoorganism.app.runtime_settings import RuntimeSettings
 from homeoorganism.config.loader import load_config
 from homeoorganism.orchestration.seed_set import SeedSet
+
+LIFE_MODES = frozenset({"continuous_full", "continuous_no_regen", "v1_baseline_full"})
 
 
 @dataclass(frozen=True)
@@ -37,12 +40,12 @@ class ExperimentMatrixRunner:
         return config.experiment.ablation_modes
 
     def _run_one(self, mode: str, seed: int) -> list[dict[str, str]]:
-        runtime = build_runtime(str(self.config_path), self._settings(mode, seed))
+        runtime = build_runtime(str(self.config_path), self._settings(mode, seed), mode)
         try:
-            runtime.orchestrator.run_protocol(mode)
+            self._run_mode(runtime, mode)
+            return self._load_run_rows(runtime, mode, seed)
         finally:
             runtime.monitoring.recorder.close()
-        return self._load_rows(runtime.artifacts.metrics_path)
 
     def _settings(self, mode: str, seed: int) -> RuntimeSettings:
         return RuntimeSettings(
@@ -53,9 +56,39 @@ class ExperimentMatrixRunner:
             clean_artifacts=True,
         )
 
-    def _load_rows(self, metrics_path: Path) -> list[dict[str, str]]:
+    def _run_mode(self, runtime, mode: str) -> None:
+        if mode in LIFE_MODES:
+            runtime.orchestrator.run(
+                mode,
+                runtime.config.experiment.lives_per_seed,
+                runtime.config.experiment.life_max_ticks,
+            )
+            return
+        runtime.orchestrator.run_protocol(
+            "full",
+            train_episodes=0,
+            eval_seen_episodes=runtime.config.experiment.lives_per_seed,
+            eval_relocation_episodes=0,
+        )
+
+    def _load_run_rows(self, runtime, mode: str, seed: int) -> list[dict[str, str]]:
+        if mode in LIFE_MODES:
+            return self._load_life_rows(runtime.artifacts.life_summaries_path, mode, seed)
+        return self._load_csv_rows(runtime.artifacts.metrics_path)
+
+    def _load_csv_rows(self, metrics_path: Path) -> list[dict[str, str]]:
         with metrics_path.open("r", encoding="utf-8", newline="") as handle:
             return list(csv.DictReader(handle))
+
+    def _load_life_rows(self, summaries_path: Path, mode: str, seed: int) -> list[dict[str, str]]:
+        rows = []
+        for line in summaries_path.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            row.update({"mode": mode, "phase": "life", "seed": seed})
+            rows.append(row)
+        return rows
 
     def _write_summary(self, rows: list[dict[str, str]]) -> Path:
         summary_rows = MatrixSummaryBuilder().build(rows)

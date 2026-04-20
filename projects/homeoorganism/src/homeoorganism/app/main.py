@@ -82,15 +82,16 @@ def _paths(raw_paths: list[str]) -> tuple[Path, ...]:
 
 def _freeze_configs(raw_paths: list[str] | None) -> tuple[Path, ...]:
     default_paths = [
-        "configs/full.yaml",
-        "configs/ablation.yaml",
-        "configs/rc3_calibration.yaml",
+        "configs/continuous_full.yaml",
+        "configs/continuous_no_regen.yaml",
+        "configs/episodic_full.yaml",
+        "configs/v1_baseline_full.yaml",
     ]
     return _paths(default_paths if raw_paths is None else raw_paths)
 
 
 def _freeze_seeds(raw_paths: list[str] | None) -> tuple[Path, ...]:
-    default_paths = ["configs/seeds/official.txt", "configs/seeds/pilot.txt"]
+    default_paths = ["configs/seeds/official_rc4.txt", "configs/seeds/pilot_rc4.txt"]
     return _paths(default_paths if raw_paths is None else raw_paths)
 
 
