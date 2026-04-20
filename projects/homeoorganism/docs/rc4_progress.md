@@ -28,14 +28,15 @@ Tracking file for RC4 branches. Update after each commit.
 - Notes: `LifeOrchestrator`, `LifeRuntime`, `LifeArtifactsWriter`, `RunReport` added.
 
 ### Branch 4.5 - v2 active agent fork
-- Commit: pending
-- Status: in progress
-- Tests: 71+ expected
+- Commit: 9b8d218 `rc4: fork v2 active agent stack from v1_baseline reference`
+- Status: closed
+- Tests: 71 passed
 - Notes: Physical copies of `agent/decision/memory/planning` from `v1_baseline/`.
-  Regression test verifies bit-for-bit identity in `RC4`.
+  Regression test `test_v1_baseline_identity.py` verifies bit-for-bit
+  identity in `RC4`; expected to start diverging in `RC5`.
 
 ### Branch 5 - Configs and CLI wiring
-- Status: not started, blocked on Branch 4.5
+- Status: not started
 - Planned: 4 ablation mode yaml configs, 2 seed files, matrix_runner dispatch.
 
 ### Branch 6 - Monitoring adaptations
