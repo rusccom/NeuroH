@@ -297,6 +297,10 @@ At the start of a new chat in this repo:
 4. identify which project folder is in scope
 5. check whether the task targets live development, frozen baseline, or release tooling
 6. if research output is involved, check artifact policy before editing anything
+7. for CLI work in `projects/homeoorganism/`, either run
+   `pip install -e .` once or prefix commands with
+   `PYTHONPATH=src python -m ...`; `pytest` works without either
+   because of the `pyproject.toml` pytest config
 
 ## Current Default Interpretation
 
