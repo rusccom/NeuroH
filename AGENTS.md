@@ -30,7 +30,7 @@ The practical workflow is:
 - `projects/neuroh/` - active development line of the current live project
 - `projects/homeogrid-mvp-rc3/` - frozen baseline snapshot from `mvp-rc3`
 - `projects/release-tooling/` - external read-only release assembler
-- `projects/homeoorganism/` - active v2 project; vision frozen, RC4 in planning
+- `projects/homeoorganism/` - active v2 project; vision frozen, RC4 in active implementation
 - `release-packages/` - ignored output folder for generated release bundles
 
 If a new chat starts, inspect this file first, then inspect:
@@ -215,7 +215,7 @@ Avoid:
 
 Active cycle: `RC4 - long-life ecology`
 Spec: `projects/homeoorganism/docs/rc4_spec.md` (frozen)
-Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + fork commit in progress.
+Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + Branch 4.5 closed (`9b8d218`).
 Remaining branches: Branch 5 (configs/CLI wiring), Branch 6 (monitoring).
 
 After branches 5 and 6:
@@ -238,6 +238,9 @@ After branches 5 and 6:
   episodic_full calibration against rc3.
 - `src/homeoorganism/orchestration/experiment_orchestrator.py` is not modified.
   It remains the episodic_full path only.
+- Biological principles in vision are normative: RC specs must reference
+  them when relevant (`RC5.5` competitive arbitration, `RC7`
+  proto-morphology, `RC9` medium memory timescale).
 - No new agent code without a committed RC spec.
 - No spec changes without an explicit spec-change commit.
 
@@ -248,6 +251,10 @@ After branches 5 and 6:
 - `episodic_full`: v2 active agent + rc3 episodic env for rc3 calibration
 - `v1_baseline_full`: v1_baseline agent + ecology regen + periodic relocation + slow memory carryover
 
+Mode set above is for `RC4`. Future cycles add modes per their specs.
+`RC5.5` adds `competitive_arbitration` ablation. `RC7` adds
+`proto_morphology` ablation.
+
 ### Decision Anchors
 
 - Decision A: slow memory carryover is on between lives within a run
@@ -257,7 +264,8 @@ After branches 5 and 6:
 ### Reading Order For A Fresh Chat
 
 1. This file (`AGENTS.md`)
-2. `projects/homeoorganism/docs/vision.md`
+2. `projects/homeoorganism/docs/vision.md` - especially
+   `Biological Principles Guiding Architectural Choices` for long-term direction
 3. `projects/homeoorganism/docs/rc4_spec.md`
 4. `projects/homeoorganism/docs/decisions/`
 5. `git log --oneline -15`

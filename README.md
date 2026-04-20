@@ -5,7 +5,7 @@
 - `projects/neuroh/` - active development line for the live project
 - `projects/homeogrid-mvp-rc3/` - frozen baseline snapshot from `mvp-rc3`
 - `projects/release-tooling/` - external release assembler
-- `projects/homeoorganism/` - active v2 project; vision frozen, RC4 in planning
+- `projects/homeoorganism/` - active v2 project; vision frozen, RC4 in active implementation
 
 ## Branch Policy
 
