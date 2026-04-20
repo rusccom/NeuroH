@@ -51,16 +51,16 @@ For any `v2` release cycle that claims progress toward living behavior, the rele
 
 ## What We Explicitly Do Not Do In v2
 
-- No neural networks in the core architecture through `RC9`.
+- No neural networks in the core architecture through `RC10`.
 - No map larger than `11x11` until the current size is exhausted and failure analysis shows scale itself is the limiting factor.
-- No morphology work until behavior on point embodiment is shown to be insufficient.
+- No full morphological computation before `RC7` proto-morphology shows measurable value.
 - No multiple architectural questions in one release cycle.
 - No merging of pilot and official waves.
 - No silent baseline recalculation or post hoc reinterpretation of frozen `rc3`.
 
 These constraints are part of the research design, not temporary convenience rules. They preserve attribution.
 
-## Revised Roadmap RC4 To RC9
+## Revised Roadmap RC4 To RC10
 
 ### RC4: Long-Life Ecology
 
@@ -70,25 +70,65 @@ Question: can the existing architecture sustain continuous life when given a reg
 
 Question: does slow adaptation of fast/slow trust biases improve behavior under environmental variability? `RC5` adds plastic arbitration while preserving interpretability of memory sources. Success requires showing that learned trust dynamics improve adaptive metrics without collapsing into one permanently dominant source.
 
+### RC5.5: Competitive Arbitration
+
+Question: does winner-take-all arbitration between information sources
+outperform the hierarchical arbiter, and does it scale better as the
+number of sources grows? `RC5.5` introduces competitive arbitration
+where `fast_memory`, `slow_memory`, and `explorer` compete through
+mutual inhibition rather than explicit priority rules. Each source
+outputs an activation level, and dynamics select the winner.
+
+Success requires the competitive arbiter to match or exceed the
+hierarchical arbiter on primary metrics, while providing a cleaner
+extension path for future sources (`RC9` medium memory, `RC8a` novelty,
+`RC8b` stress). Failure results in reverting to the hierarchical
+arbiter and documenting the result.
+
 ### RC6: Rest And Consolidation
 
 Question: does a fatigue/rest cycle with safe zones produce measurable gains in long-horizon survival? `RC6` introduces structured downtime and consolidation pressure. The cycle succeeds if rest produces long-horizon benefit rather than simply adding idle ticks.
 
-### RC7a: Novelty Drive
+### RC7: Proto-Morphology
 
-Question: does explicit novelty reward improve exploration without harming homeostasis? `RC7a` isolates novelty as its own architectural question. Success requires increased useful exploration and mode diversity without raising collapse rates.
+Question: does giving the agent a non-point body with orientation and
+inertia produce behavioral change that cannot be captured by pure
+control architecture? `RC7` replaces point embodiment with a minimal
+extended body (two cells, with heading and turning cost in ticks).
+Movement is direction-dependent, collisions carry physical cost, and
+navigation through narrow corridors depends on orientation.
 
-### RC7b: Stress And Hazard Response
+Success requires measurable divergence from the point-embodiment
+baseline in at least one of: navigation efficiency in complex
+environments, energy cost distribution, mode diversity, or safe-rest
+behavior. Morphology that does not change behavior is a failed
+hypothesis about embodiment and results in reverting to point.
 
-Question: does explicit stress response improve caution behavior under threat? `RC7b` separates threat handling from novelty. Success requires safer behavior under hazard while preserving recovery and resource acquisition.
+### RC8a: Novelty Drive
 
-### RC8: Medium Memory
+Question: does explicit novelty reward improve exploration without harming homeostasis? `RC8a` isolates novelty as its own architectural question. Success requires increased useful exploration and mode diversity without raising collapse rates.
 
-Question: does a memory tier between fast and slow improve adaptation to medium-term environmental shifts? `RC8` adds a middle timescale only if `RC5-RC7b` show a remaining gap that existing layers cannot explain. Success requires cleaner attribution than "more memory helps."
+### RC8b: Stress And Hazard Response
 
-### RC9: Morphology
+Question: does explicit stress response improve caution behavior under threat? `RC8b` separates threat handling from novelty. Success requires safer behavior under hazard while preserving recovery and resource acquisition.
 
-Question: does non-point embodiment change behavior fundamentally? `RC9` is optional and only starts if prior cycles show that control architecture has plateaued under point embodiment. Morphology is not a default extension path.
+### RC9: Medium Memory
+
+Question: does a memory tier between fast and slow improve adaptation to medium-term environmental shifts? `RC9` adds a middle timescale only if `RC5-RC8b` show a remaining gap that existing layers cannot explain. Success requires cleaner attribution than "more memory helps."
+
+### RC10: Full Morphological Computation (Optional)
+
+Question: does offloading parts of behavior from control architecture to
+body physics produce measurable gains in robustness, energy
+efficiency, or behavioral adaptivity? `RC10` extends `RC7`
+proto-morphology with computations executed by body shape:
+stance-dependent energy cost, geometry-dependent sensor coverage,
+morphology-dependent rest efficacy.
+
+`RC10` is optional. It starts only if `RC7` demonstrates that
+proto-morphology already produces value without additional mechanisms.
+If `RC7` shows morphology has no measurable effect, `RC10` is
+cancelled.
 
 ## Gate Criteria Per RC
 
@@ -106,16 +146,18 @@ Question: does non-point embodiment change behavior fundamentally? `RC9` is opti
 | Official exit | Release package reports all RC4 metrics, includes a verdict, and states whether continuous life satisfied the operational criteria introduced here. |
 | Official exit | Results are attributable through ablations rather than isolated cherry-picked trajectories. |
 
-### RC5-RC9 Summary Gates
+### RC5-RC10 Summary Gates
 
 | RC | Entry gate | Exit gate |
 | --- | --- | --- |
 | `RC5` | `RC4` verdict complete and remaining adaptation gap identified. | Plastic trust improves adaptive criteria under variability and remains interpretable. |
-| `RC6` | `RC5` verdict complete and fatigue/rest justified by measured failure mode. | Rest/consolidation improves long-horizon survival or memory retention without trivializing control. |
-| `RC7a` | `RC6` verdict complete and exploration deficit documented. | Novelty drive improves exploration-related criteria without homeostatic collapse. |
-| `RC7b` | `RC7a` verdict complete and hazard-response question isolated. | Stress response improves hazard behavior with measurable causal contribution. |
-| `RC8` | Prior cycles show unresolved medium-timescale adaptation gap. | Medium memory adds distinct value not explained by fast or slow layers alone. |
-| `RC9` | Point-embodiment limits are evidenced, not assumed. | Morphology changes behavior in a way that cannot be reduced to prior control changes. |
+| `RC5.5` | `RC5` verdict complete and arbitration scaling problem explicitly framed. | Competitive arbitration matches or exceeds the hierarchical arbiter and scales cleanly to added sources. |
+| `RC6` | `RC5.5` verdict complete and fatigue/rest justified by measured failure mode. | Rest/consolidation improves long-horizon survival or memory retention without trivializing control. |
+| `RC7` | `RC6` verdict complete and embodiment question isolated with a point-body baseline. | Proto-morphology changes behavior measurably rather than acting as cosmetic physics. |
+| `RC8a` | `RC7` verdict complete and exploration deficit documented. | Novelty drive improves exploration-related criteria without homeostatic collapse. |
+| `RC8b` | `RC8a` verdict complete and hazard-response question isolated. | Stress response improves hazard behavior with measurable causal contribution. |
+| `RC9` | `RC8b` verdict complete and an unresolved medium-timescale adaptation gap remains. | Medium memory adds distinct value not explained by fast or slow layers alone. |
+| `RC10` | `RC9` verdict complete and `RC7` shows proto-morphology has measurable value with a remaining body-physics question. | Full morphological computation improves robustness, energy efficiency, or adaptivity beyond `RC7`. |
 
 ## Relation To v1 (rc3)
 
@@ -143,13 +185,20 @@ A regression test, `test_v1_baseline_identity.py`, asserts identity in
 
 ### Transitional Bootstrap Layers
 
-`analytics/`, `app/`, and `orchestration/` are imported from `rc3` to provide a runnable baseline harness that can execute `v1_baseline_full` as an ablation condition in `v2`. These modules are not part of the frozen `v2` architecture. They are scheduled for rewrite in `RC4` under continuous-life assumptions (see "Rewritten From Scratch" below). Their current presence in `v2` is a bridge, not a commitment.
+`analytics/metrics.py` and
+`orchestration/experiment_orchestrator.py` remain imported from `rc3`
+as calibration anchors for `episodic_full`. In `RC4` they are
+intentionally not modified. Their role is to preserve a stable
+comparison path while the continuous-life stack is added beside them.
 
-### Rewritten From Scratch
+### Added Alongside The Calibration Anchors
 
-- `experiment_orchestrator`, because `v2` is life-centric rather than episode-centric.
-- Metrics collection, because `v2` requires windowed continuous metrics rather than episode summaries only.
-- Agent core loop, because `RC4` must define continuous-life control semantics explicitly rather than inheriting episodic assumptions by accident.
+- `orchestration/life_orchestrator.py`, `life_artifacts.py`, and
+  related runtime/report layers for uninterrupted life execution.
+- `analytics/windowed_metrics.py`, `event_metrics.py`, and related
+  rolling-series utilities for long-life measurement.
+- Active-stack import wiring that can run either the forked `v2` agent
+  or the immutable `v1_baseline` stack as named ablations.
 
 ### Preserved As Immutable Reference
 
@@ -165,6 +214,75 @@ Status at `v2` start: open but straightforward. The defect is caused by `np.rand
 
 Status at `v2` start: open and not yet explained. Before `full_observation` is reused as a `v2` ablation mode, `RC4` must determine whether the `rc3` pathology came from metric triggering, exploration-visibility interaction, or stale belief-map state after relocation. If the root cause is metric-related, the fix belongs in `v2` metrics and the verdict must say so. If the root cause is architectural, the behavior must be documented as an expected limitation rather than quietly normalized.
 
+## Biological Principles Guiding Architectural Choices
+
+The program does not replicate biology. It adopts principles that
+biology has empirically validated as necessary for living behavior,
+while choosing engineering implementations appropriate to a
+computational substrate. The long-term horizon of the program is to
+approach behavioral sophistication of simple organisms (`C. elegans`,
+`Drosophila`) while maintaining component-level attribution and
+interpretability that full brain emulation cannot provide.
+
+### Principles Adopted In HomeoOrganism v2
+
+- **Homeostasis as the organizing basis for behavior.** Not an added
+  feature, but structural. Implemented in `drive_model`, integral to
+  every decision. Spans all cycles.
+- **Multi-timescale plasticity.** Fast memory within a life, slow
+  memory across lives, planned medium tier. Plastic trust biases added
+  in `RC5`.
+- **Prediction and expectation violation as drivers of adaptation.**
+  Partially implemented as `EXPECTATION_VIOLATED` events. Full
+  predictive coding deferred to later cycles.
+- **Exploration-exploitation tension as a core behavioral dimension.**
+  Arbiter implements it implicitly; `RC8a` novelty drive makes it
+  structural.
+- **Stress as a global mode switch.** Planned for `RC8b`.
+- **Winner-take-all arbitration instead of hierarchical selection.**
+  Biology has no central arbiter; competing parallel systems produce
+  selection through mutual inhibition. Hierarchical arbiter in `rc3`
+  is an engineering simplification. `RC5.5` introduces competitive
+  arbitration as an alternative, with ablation comparison against
+  hierarchical.
+- **Morphological computation.** The body is not inert; geometry and
+  physics participate in behavior. Point embodiment in `RC4` is a
+  simplification. `RC7` introduces proto-morphology (extended body,
+  orientation, inertia). Full morphological computation is considered
+  in `RC10` and in a later transition to continuous environments.
+
+### Principles Deferred To Continuous Environments (Project 2+)
+
+- **Asynchrony.** Biology has no tick. Grid-world tick-based execution
+  is an appropriate simplification. Continuous 2D will introduce
+  multiple timescales (reflex loop, action loop, planning loop).
+- **Massive parallelism.** Biology has billions of parallel elements.
+  Computational substrate is different. Module independence is
+  preserved architecturally, so parallel execution is possible when
+  needed; actual parallel execution arrives with real robotics
+  hardware.
+
+### What This Program Is Not
+
+- Not a simulation of any particular biological organism.
+- Not an attempt at whole brain emulation.
+- Not a neural network research program.
+- Not a claim about consciousness, sentience, or the philosophical
+  nature of life.
+
+The claim is narrower: a minimal embodied system can be built whose
+behavior satisfies operational criteria of living behavior, whose
+components are individually attributable through ablation, and whose
+architecture is compatible with scaling toward biological complexity
+along principles biology has already validated.
+
 ## Success Criteria For The Whole v2 Program
 
-`v2` is successful if by the end of `RC8` the system demonstrates all three groups of operational criteria simultaneously, with clear attribution of each criterion to specific architectural components through ablation, and with reproducible performance across independent seeds and environmental conditions. A successful `v2` program therefore ends with a system that is not only harder to break, but also easier to explain.
+`v2` is successful if by the end of `RC9` the system demonstrates all
+three groups of operational criteria simultaneously, with clear
+attribution of each criterion to specific architectural components
+through ablation, and with reproducible performance across independent
+seeds and environmental conditions. `RC10`, if opened, is an optional
+extension for morphology-led gains rather than a prerequisite for the
+core `v2` claim. A successful `v2` program therefore ends with a
+system that is not only harder to break, but also easier to explain.
