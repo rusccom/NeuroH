@@ -36,8 +36,12 @@ Tracking file for RC4 branches. Update after each commit.
   identity in `RC4`; expected to start diverging in `RC5`.
 
 ### Branch 5 - Configs and CLI wiring
-- Status: not started
-- Planned: 4 ablation mode yaml configs, 2 seed files, matrix_runner dispatch.
+- Commit: 51b8b97 `rc4: add four ablation mode configurations and CLI wiring`
+- Status: closed
+- Tests: 77 passed
+- Notes: Added 4 `RC4` mode configs, cycle-scoped `pilot_rc4.txt` and
+  `official_rc4.txt`, and mode-aware matrix dispatch for continuous and
+  episodic runs. Smoke `run-matrix` passes with `PYTHONPATH=src`.
 
 ### Branch 6 - Monitoring adaptations
 - Status: not started

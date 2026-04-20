@@ -215,8 +215,8 @@ Avoid:
 
 Active cycle: `RC4 - long-life ecology`
 Spec: `projects/homeoorganism/docs/rc4_spec.md` (frozen)
-Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + Branch 4.5 closed (`9b8d218`).
-Remaining branches: Branch 5 (configs/CLI wiring), Branch 6 (monitoring).
+Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + Branch 4.5 + Branch 5 closed (`51b8b97`).
+Remaining branches: Branch 6 (monitoring).
 
 After branches 5 and 6:
 1. Smoke test all 4 ablation modes
@@ -270,6 +270,22 @@ Mode set above is for `RC4`. Future cycles add modes per their specs.
 4. `projects/homeoorganism/docs/decisions/`
 5. `git log --oneline -15`
 6. `projects/homeoorganism/tests/`
+
+### Branch Completion Checklist
+
+Before reporting a branch as closed:
+
+1. Full relevant test suite green; test count recorded.
+2. Commit created with `rc<N>:` or `docs:` prefix.
+3. `git push origin main` executed and verified:
+   `git rev-parse HEAD`
+   `git ls-remote origin main refs/heads/main`
+   hashes must match
+4. `projects/homeoorganism/docs/rc4_progress.md` updated with status,
+   commit hash, and test count when `RC4` work is in scope.
+5. Only after all steps above is the branch reported as closed.
+
+A branch is not closed until `origin/main` reflects the commit.
 
 ## New Chat Startup Checklist
 
