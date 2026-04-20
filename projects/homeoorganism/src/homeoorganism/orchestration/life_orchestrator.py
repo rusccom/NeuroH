@@ -15,6 +15,9 @@ from homeoorganism.domain.enums import ResourceType
 from homeoorganism.domain.types import EpisodeSummary
 from homeoorganism.domain.types import Transition
 from homeoorganism.env.gym_env import HomeoGridEnv
+from homeoorganism.monitoring.core.life_snapshot_builder import LifeSnapshotBuilder
+from homeoorganism.monitoring.core.monitoring_facade import MonitoringFacade
+from homeoorganism.monitoring.domain.dto import EpisodeSummaryView
 from homeoorganism.monitoring.domain.enums import RunState
 from homeoorganism.orchestration.life_artifacts import LifeArtifactsWriter
 from homeoorganism.orchestration.life_state_store import LifeRuntime
@@ -31,6 +34,8 @@ class LifeOrchestrator:
     artifacts: LifeArtifactsWriter
     experiment_config: ExperimentConfig
     config_hash: str
+    monitoring: MonitoringFacade
+    snapshot_builder: LifeSnapshotBuilder
     run_state_store: RunStateStore | None = None
 
     def __post_init__(self) -> None:
@@ -38,6 +43,7 @@ class LifeOrchestrator:
         self._full_planner_config = self.agent.planner.planner_config
         self._active_mode = "continuous_full"
         self._active_seed = self.experiment_config.base_seed
+        self._completed_lives = []
 
     def run(
         self,
@@ -59,6 +65,8 @@ class LifeOrchestrator:
         self._activate_mode(mode, life_max_ticks)
         self._reset_metrics()
         self._reset_slow_memory()
+        self._completed_lives = []
+        self.snapshot_builder.life_max_ticks = life_max_ticks
         self._set_state(RunState.RUNNING)
 
     def _run_life(self, life_id: int, life_max_ticks: int):
@@ -82,6 +90,7 @@ class LifeOrchestrator:
         self.agent.observe_transition(transition)
         runtime.advance(next_obs.step_idx)
         self._write_tick_rows(runtime.tick, next_obs.body, info)
+        self._publish_snapshot(runtime.life_id, next_obs)
         return next_obs
 
     def _write_tick_rows(self, tick: int, body, info) -> None:
@@ -105,6 +114,9 @@ class LifeOrchestrator:
         self.artifacts.write_life_summary(summary)
         self.artifacts.append_event_rows(event_rows)
         self.artifacts.append_series_row(series_row)
+        self._completed_lives.append(life_state)
+        self._publish_life_end(life_state, obs)
+        self._publish_snapshot(life_state.life_id, obs)
         return life_state
 
     def _activate_mode(self, mode: str, life_max_ticks: int) -> None:
@@ -128,6 +140,7 @@ class LifeOrchestrator:
 
     def _reset_metrics(self) -> None:
         self.metrics = ContinuousMetrics(self.metrics.window_sizes, self.metrics.block_size)
+        self.snapshot_builder.metrics = self.metrics
 
     def _finalize_run(
         self,
@@ -224,6 +237,26 @@ class LifeOrchestrator:
         supported = {"continuous_full", "continuous_no_regen", "v1_baseline_full"}
         if mode not in supported:
             raise ValueError(f"Unsupported life mode: {mode}")
+
+    def _publish_snapshot(self, life_id: int, obs) -> None:
+        snapshot = self.snapshot_builder.build(
+            self.experiment_config.run_id,
+            life_id,
+            obs,
+            tuple(self._completed_lives),
+        )
+        self.monitoring.publish_step(snapshot)
+
+    def _publish_life_end(self, life_state, obs) -> None:
+        summary = EpisodeSummaryView(
+            episode_id=life_state.life_id,
+            biome_id=None if self.env.state is None else self.env.state.biome_id.value,
+            steps=life_state.tick,
+            total_reward=0.0,
+            died=not obs.body.alive,
+            death_reason=life_state.end_reason,
+        )
+        self.monitoring.publish_episode_end(summary)
 
 
 _DEPLETION_REASONS = {"energy_depleted", "water_depleted"}

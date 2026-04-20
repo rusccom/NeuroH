@@ -125,6 +125,14 @@ button:hover { border-color: var(--accent); cursor: pointer; }
   background: var(--panel-2);
   border: 1px solid var(--line);
 }
+.life-panel {
+  margin: 0;
+  white-space: pre-wrap;
+  font-family: "Consolas", "SFMono-Regular", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
 .event-item.warn { border-color: var(--warn); }
 .event-item.critical { border-color: var(--critical); }
 

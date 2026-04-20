@@ -16,6 +16,7 @@ from homeoorganism.agent.working_buffer import WorkingBuffer
 from homeoorganism.analytics.metrics import MetricsCollector
 from homeoorganism.analytics.report_writer import ReportWriter
 from homeoorganism.analytics.windowed_metrics import ContinuousMetrics
+from homeoorganism.app.monitoring_runtime import build_monitoring, build_snapshot_builder
 from homeoorganism.config.loader import ConfigBundle, load_config
 from homeoorganism.decision.arbiter import Arbiter
 from homeoorganism.decision.biome_inferer import BiomeInferer
@@ -27,13 +28,7 @@ from homeoorganism.env.gym_env import HomeoGridEnv
 from homeoorganism.memory.fast_memory import FastMemory
 from homeoorganism.memory.replay_manager import ReplayManager
 from homeoorganism.memory.slow_memory import SlowMemory
-from homeoorganism.monitoring.core.alert_engine import AlertEngine
-from homeoorganism.monitoring.core.frame_ring_buffer import FrameRingBuffer
 from homeoorganism.monitoring.core.monitoring_facade import MonitoringFacade
-from homeoorganism.monitoring.core.replay_loader import ReplayLoader
-from homeoorganism.monitoring.core.session_recorder import SessionRecorder
-from homeoorganism.monitoring.core.snapshot_builder import SnapshotBuilder
-from homeoorganism.monitoring.core.stream_hub import StreamHub
 from homeoorganism.monitoring.domain.enums import OperatorCommandType, RunState
 from homeoorganism.monitoring.web.api import create_monitor_app
 from homeoorganism.orchestration.command_bus import CommandBus
@@ -202,29 +197,6 @@ def _build_v1_baseline_agent(
     return agent, belief_map, working_buffer
 
 
-def _build_snapshot_builder(config, belief_map, working_buffer, metrics, run_state_store, translator):
-    return SnapshotBuilder(
-        belief_map=belief_map,
-        working_buffer=working_buffer,
-        metrics=metrics,
-        run_state_store=run_state_store,
-        translator=translator,
-        episode_limit=config.env.episode_limit,
-    )
-
-
-def _build_monitoring(config, translator, run_state_store, artifacts) -> MonitoringFacade:
-    return MonitoringFacade(
-        frame_buffer=FrameRingBuffer(config.monitor.frame_buffer_size),
-        alert_engine=AlertEngine(translator),
-        recorder=SessionRecorder(str(artifacts.monitoring_dir), config.monitor.raw_event_buffer_size),
-        stream_hub=StreamHub(),
-        replay_loader=ReplayLoader(str(artifacts.monitoring_dir)),
-        run_state_store=run_state_store,
-        max_alerts=config.monitor.max_alerts_in_panel,
-    )
-
-
 def _run_ablation_only(runtime: Runtime) -> None:
     if not isinstance(runtime.orchestrator, ExperimentOrchestrator):
         raise ValueError("Ablation mode is only supported for episodic runtimes.")
@@ -265,6 +237,8 @@ def _build_orchestrator(mode: str, config, components, artifacts):
         artifacts=artifacts,
         experiment_config=config.experiment,
         config_hash=config.config_hash,
+        monitoring=components["monitoring"],
+        snapshot_builder=components["snapshot_builder"],
         run_state_store=components["run_state_store"],
     )
 
@@ -283,22 +257,22 @@ def _runtime_components(config, artifacts, mode: str, load_saved_memory: bool):
         agent, belief_map, working_buffer = _build_active_agent(config, slow_memory)
     if load_saved_memory:
         slow_memory.load(str(artifacts.slow_memory_path))
-    snapshot_builder = None
-    if mode == "episodic_full":
-        snapshot_builder = _build_snapshot_builder(
-            config,
-            belief_map,
-            working_buffer,
-            metrics,
-            run_state_store,
-            translator,
-        )
+    snapshot_builder = build_snapshot_builder(
+        config,
+        belief_map,
+        working_buffer,
+        metrics,
+        run_state_store,
+        translator,
+        env,
+        mode,
+    )
     return {
         "agent": agent,
         "command_bus": command_bus,
         "env": env,
         "metrics": metrics,
-        "monitoring": _build_monitoring(config, translator, run_state_store, artifacts),
+        "monitoring": build_monitoring(config, translator, run_state_store, artifacts),
         "run_state_store": run_state_store,
         "snapshot_builder": snapshot_builder,
     }

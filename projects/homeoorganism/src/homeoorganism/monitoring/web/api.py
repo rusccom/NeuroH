@@ -41,6 +41,13 @@ def _add_api_routes(router: APIRouter, monitoring, control_port) -> None:
     def bootstrap():
         return JSONResponse(_json_ready(monitoring.bootstrap()))
 
+    @router.get("/api/monitor/snapshot")
+    @router.get("/snapshot")
+    def snapshot():
+        latest = monitoring.latest_snapshot()
+        payload = None if latest is None else latest.model_dump()
+        return JSONResponse(_json_ready({"snapshot": payload}))
+
     @router.get("/api/monitor/stream")
     async def stream(request: Request):
         return StreamingResponse(_stream_events(request, monitoring), media_type="text/event-stream")
@@ -85,7 +92,7 @@ def _json_ready(value):
 
 async def _stream_events(request: Request, monitoring):
     queue = monitoring.stream_hub.subscribe()
-    latest = monitoring.frame_buffer.latest()
+    latest = monitoring.latest_snapshot()
     try:
         if latest is not None:
             yield _sse(StreamEventType.FRAME.value, latest.model_dump())

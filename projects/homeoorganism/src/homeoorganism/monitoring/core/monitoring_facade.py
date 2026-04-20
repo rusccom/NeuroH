@@ -50,12 +50,15 @@ class MonitoringFacade(TelemetryPublisher):
         self.stream_hub.publish(StreamEventType.SUMMARY, summary.model_dump())
 
     def bootstrap(self) -> dict:
-        latest = self.frame_buffer.latest()
+        latest = self.latest_snapshot()
         return {
             "run_state": self.run_state_store.get_run_state(),
             "latest_frame": None if latest is None else latest.model_dump(),
             "recent_alerts": [item.model_dump() for item in self.recent_alerts],
         }
+
+    def latest_snapshot(self):
+        return self.frame_buffer.latest()
 
     def history(self, run_id: str, episode_id: int) -> dict:
         return self.replay_loader.load(run_id, episode_id)

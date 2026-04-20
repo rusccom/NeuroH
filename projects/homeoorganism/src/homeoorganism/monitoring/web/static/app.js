@@ -10,6 +10,7 @@ const runState = document.getElementById("run-state");
 const connectionState = document.getElementById("connection-state");
 const episodeState = document.getElementById("episode-state");
 const targetState = document.getElementById("target-state");
+const lifePanel = document.getElementById("life-panel");
 const slider = document.getElementById("replay-slider");
 const charts = createCharts(document.getElementById("chart-root"));
 const history = [];
@@ -58,15 +59,18 @@ function connectStream() {
 }
 
 function renderSnapshot(snapshot) {
-  history.push(toSignals(snapshot));
+  history.push(toSignals(baseSnapshot(snapshot)));
   if (history.length > 120) history.shift();
   charts.update(history);
-  renderMap(mapCanvas, snapshot);
-  renderBlob(document.getElementById("blob-root"), snapshot);
+  renderMap(mapCanvas, baseSnapshot(snapshot));
+  renderBlob(document.getElementById("blob-root"), baseSnapshot(snapshot));
   runState.textContent = snapshot.run_state;
-  episodeState.textContent = `episode ${snapshot.episode_id} / step ${snapshot.world.step_idx}`;
+  episodeState.textContent = snapshot.life_id === undefined
+    ? `episode ${snapshot.episode_id} / step ${snapshot.world.step_idx}`
+    : `life ${snapshot.life_id} / tick ${snapshot.current_tick}`;
   targetState.textContent = `Target: ${snapshot.world.target ? snapshot.world.target.join(", ") : "-"}`;
   renderKpis(snapshot);
+  renderLifePanel(snapshot);
 }
 
 function renderKpis(snapshot) {
@@ -90,6 +94,26 @@ function renderEvent(event) {
   eventList.prepend(item);
 }
 
+function renderLifePanel(snapshot) {
+  if (snapshot.life_id === undefined) {
+    lifePanel.textContent = "episodic snapshot";
+    return;
+  }
+  lifePanel.textContent = [
+    `life_id: ${snapshot.life_id}`,
+    `tick: ${snapshot.current_tick}/${snapshot.life_max_ticks}`,
+    `energy_ratio_100: ${formatMetric(snapshot.current_energy_ratio_100)}`,
+    `water_ratio_100: ${formatMetric(snapshot.current_water_ratio_100)}`,
+    `deficit_variance_100: ${formatMetric(snapshot.current_deficit_variance)}`,
+    `energy_ratio_1000: ${formatMetric(snapshot.long_window_energy_ratio)}`,
+    `water_ratio_1000: ${formatMetric(snapshot.long_window_water_ratio)}`,
+    `food_count: ${snapshot.current_food_count}`,
+    `water_count: ${snapshot.current_water_count}`,
+    `next_relocation_tick: ${snapshot.next_relocation_tick ?? "-"}`,
+    `completed_lives: ${formatCompletedLives(snapshot.completed_lives || [])}`,
+  ].join("\n");
+}
+
 async function loadReplay() {
   const [,, runId, episodeId] = window.location.pathname.split("/").slice(-4);
   const payload = await fetchJson(`/api/monitor/history/${runId}/${episodeId}`);
@@ -104,6 +128,10 @@ function card(label, value) {
   return `<article class="metric-card"><span>${label}</span><strong>${value}</strong></article>`;
 }
 
+function baseSnapshot(snapshot) {
+  return snapshot.base_snapshot ?? snapshot;
+}
+
 function toSignals(snapshot) {
   return {
     energy_deficit: snapshot.need.energy_deficit,
@@ -111,6 +139,15 @@ function toSignals(snapshot) {
     uncertainty: snapshot.blob.uncertainty,
     selected_confidence: snapshot.memory.selected_confidence,
   };
+}
+
+function formatMetric(value) {
+  return value === null || value === undefined ? "-" : Number(value).toFixed(3);
+}
+
+function formatCompletedLives(completedLives) {
+  if (!completedLives.length) return "-";
+  return completedLives.map((item) => `${item.life_id}:${item.end_reason}@${item.duration_ticks}`).join(", ");
 }
 
 async function fetchJson(url) {
