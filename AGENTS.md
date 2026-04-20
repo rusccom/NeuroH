@@ -215,10 +215,10 @@ Avoid:
 
 Active cycle: `RC4 - long-life ecology`
 Spec: `projects/homeoorganism/docs/rc4_spec.md` (frozen)
-Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + Branch 4.5 + Branch 5 closed (`51b8b97`).
-Remaining branches: Branch 6 (monitoring).
+Progress: Branch 1 + Branch 2 + Branch 3 + Branch 4 + Branch 4.5 + Branch 5 + Branch 6 closed (`2f21e4c`).
+Remaining branches: implementation complete; RC4 is in validation and release phase.
 
-After branches 5 and 6:
+After implementation branches:
 1. Smoke test all 4 ablation modes
 2. Pilot wave on pilot_rc4.txt seeds (5 seeds x 5 lives x 4 modes)
 3. Pilot review and pilot freeze tag

@@ -44,5 +44,10 @@ Tracking file for RC4 branches. Update after each commit.
   episodic runs. Smoke `run-matrix` passes with `PYTHONPATH=src`.
 
 ### Branch 6 - Monitoring adaptations
-- Status: not started
-- Planned: life timeline, rolling plots, ecology state panel.
+- Commit: 2f21e4c `rc4: add continuous-life monitoring adaptations`
+- Status: closed
+- Tests: 85 passed
+- Notes: `LifeSnapshotBuilder` added parallel to the episodic
+  `SnapshotBuilder`; continuous modes now publish life-aware monitoring
+  frames and `/snapshot` returns `LifeSnapshot` JSON. Existing episodic
+  monitoring path and calibration anchors remain unchanged.
